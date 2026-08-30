@@ -1,0 +1,51 @@
+/* SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+
+/*!
+\mainpage OCUDU dApp SDK
+
+The OCUDU dApp SDK is a standalone repository of reference modules, process
+workers, scaffolds, and certifiers. It consumes the installed \c OCUDUDAppSDK
+CMake package and does not require the OCUDU source tree.
+
+Working contracts remain package and ABI schema \b v1 until a formal release
+decision.
+
+\section sdk_doc_map Documentation map
+
+| Page | Topic |
+|------|-------|
+| \ref sdk_quickstart | End-to-end author and operator walkthrough |
+| \ref sdk_reference_packages | Shipped reference artifacts |
+| \ref sdk_tools | Scaffold, certifier, and host tools |
+| \ref sdk_class_a_cuda | Resident Class-A CUDA authoring |
+| \ref sdk_class_b | Class-B scheduler authoring |
+| \ref sdk_class_c_cuda | Class-C native and process authoring |
+| \ref sdk_observer_authority | Spectrum observer vs authority |
+
+Enable/run cookbooks for every example package (YAML + E3 + UUIDs) live in
+Markdown \c docs/run_examples.md (preferred on GitHub/GitLab).
+
+Git-rendered Markdown companions live in the parent \c docs/ directory and are
+the preferred view on GitHub/GitLab. These Doxygen pages match the main OCUDU
+repository documentation style for HTML builds.
+
+\section sdk_build Build this documentation
+
+\code{.sh}
+cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/installed/ocudu-dapp-sdk
+cmake --build build --target doxygen
+\endcode
+
+Open \c build/docs/doxygen/html/index.html.
+
+\section sdk_host_docs OCUDU host documentation
+
+Runtime, catalog, and E3 guides ship with the OCUDU tree:
+
+- \c docs/dapp/README.md — Git index
+- \c docs/dapp/e3_management.md, \c e3_wire.md, \c e3_system_design.md
+- \c docs/doxygen/dapp_*.dox and \c e3_*.dox
+
+*/

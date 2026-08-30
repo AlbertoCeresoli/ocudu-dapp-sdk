@@ -1,0 +1,70 @@
+/* SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+
+/*! \page sdk_quickstart OCUDU dApp SDK Quickstart
+
+This page summarizes the SDK walkthrough in OCUDU Doxygen style. The full
+command-level guide is the Git Markdown companion
+\c docs/ocudu_dapp_quickstart.md.
+
+\section sdk_qs_flow End-to-end flow
+
+\code{.text}
+scaffold / copy reference  ->  build package (so|exe + manifest + SPDX)
+        -> offline certify (Class A CUDA)
+        -> stage catalog on DU host
+        -> (production) ocudu-dapp-package sign / trust
+        -> DU YAML package_manifests [+ initial_instances]
+        -> E3 load -> prepare -> arm -> shadow -> activate
+        -> metrics / incidents / health
+\endcode
+
+\section sdk_qs_vendor Multi-vendor template
+
+Copy \c examples/vendor_min for install-only commercial Class-A packages
+(\c find_package(OCUDUDapp), shared \c package_config). See Markdown guides
+\c docs/vendor_toolkit.md and \c docs/package_config.md.
+
+\section sdk_qs_scaffold Class-A CUDA scaffold
+
+\code{.sh}
+python3 tools/scaffold_class_a_cuda.py \
+  --kind receiver \
+  --target my_neural_rx_cuda \
+  --global-name com.example.ran.neural-rx.cuda \
+  --package-id $(uuidgen) \
+  --output ../my-neural-rx-dapp
+\endcode
+
+Kinds: \c ce (\c 0x00010003), \c equalizer (\c 0x00010004),
+\c receiver (\c 0x00010005). Replace only \c algorithm.cu; keep pure query and
+lifecycle shells.
+
+\section sdk_qs_build Build and certify
+
+\code{.sh}
+cmake -S . -B build -DCMAKE_PREFIX_PATH=$OCUDU_PREFIX -DCMAKE_CUDA_ARCHITECTURES=121
+cmake --build build -j
+certify_class_a_cuda build/my_neural_rx_cuda.so 0x00010005
+\endcode
+
+\section sdk_qs_classes Classes B and C
+
+- Class B: copy \c reference/scheduler; see \ref sdk_class_b.
+- Class C: copy native or process references; see \ref sdk_class_c_cuda and
+  \ref sdk_observer_authority.
+
+\section sdk_qs_du Host enablement
+
+Install OCUDU with \c ENABLE_DAPP=ON and \c ENABLE_E3=ON. Configure catalog
+root, package manifests, optional signatures, and \c local_e3. Manage instances
+with \c ocudu-dappctl or the Python client. Full YAML and lifecycle tables:
+Markdown quickstart and OCUDU \c dapp_quickstart / \c e3_management pages.
+
+\section sdk_qs_related Related pages
+
+\ref sdk_reference_packages · \ref sdk_tools · \ref sdk_class_a_cuda ·
+OCUDU E3 management, wire, and system design guides.
+
+*/

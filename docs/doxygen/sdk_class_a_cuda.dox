@@ -1,0 +1,46 @@
+/* SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+
+/*! \page sdk_class_a_cuda Class-A CUDA Authoring
+
+Markdown companion: \c docs/class_a_cuda_authoring.md (normative depth).
+
+\section sdk_a_depths Replacement depths
+
+| Kind | Interface | Output |
+|------|-----------|--------|
+| CE | \c 0x00010003 | Full-slot CF32 H + F32 noise |
+| Equalizer | \c 0x00010004 | Compact CF32 symbols + post-EQ noise |
+| Receiver | \c 0x00010005 | Compact FP16 LLRs pre-descramble |
+
+\section sdk_a_rules Hot-path rules
+
+- Pure \c ocudu_dapp_query_v1 (no CUDA init in query).
+- Enqueue only on \c invocation.execution_stream; do not host-synchronize.
+- Allocate weights and scratch in prepare / model / worker create.
+- Per-lane worker state for concurrent PUSCH.
+- \c noexcept ABI callbacks with \c guard_algorithm_call for algorithm code.
+- Profile in descriptor must match hash-bound manifest.
+- v1 envelope: two layers max, all QAM, DM-RS 1/2, no transform precoding.
+
+\section sdk_a_metrics Host metrics
+
+\c class_a.fallback.* counts host bypass reasons.
+\c class_a.completion.deadline_misses counts late GPU completion without
+rewinding the current result through conventional fallback.
+
+\section sdk_a_cert Certify before catalog
+
+\code{.sh}
+certify_class_a_cuda my_module.so 0x00010005
+\endcode
+
+\section sdk_a_run Enable on a DU
+
+Stage \c .so + manifest + SBOM, list under \c package_manifests, then E3
+\c load (in-process / cuda|cpu) → prepare → arm → shadow → activate.
+Copy-paste for every Class-A reference: Markdown \c docs/run_examples.md §1–§2
+and the enable section of \c docs/class_a_cuda_authoring.md.
+
+*/

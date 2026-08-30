@@ -1,0 +1,40 @@
+<!-- SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc. -->
+<!-- SPDX-License-Identifier: BSD-3-Clause-Clear -->
+
+# Changelog
+
+This project follows [Semantic Versioning](https://semver.org/) for toolkit releases. The public C dApp ABI and wire-schema versions are versioned independently; see [API_STABILITY.md](API_STABILITY.md).
+
+## 0.1.0 - unreleased
+
+- Class-A CUDA scaffold generator (`ocudu-dapp-scaffold-class-a-cuda`):
+  self-contained vendor projects for the ce/equalizer/receiver depths with
+  generation, build, and certification gates in ctest.
+- The `ocudu-docker` zero-hardware testbed: reproducible CPU/CUDA container
+  builds of both public repos with the release gates run in-build, plus the
+  loopback E3 agent the tutorial series targets.
+- Class-B and Class-C CPU scaffold generators
+  (`ocudu-dapp-scaffold-class-bc-cpu`): self-contained vendor projects for the
+  scheduler, spectrum, and SRS-ISAC contracts, built and contract-tested end
+  to end by `scaffold.class_bc_cpu` on every platform.
+
+- Documentation: a 13-part getting-started tutorial ladder (docker testbed, vendor repo, install,
+  operations, MCP, signing, KPIs, standalone Class-C, telemetry/capture, model
+  operations, Class-B scheduler, troubleshooting, capstone) plus a glossary and
+  an extension-governance guide, linked from both repos' READMEs.
+- MCP example: every mutating tool now defaults to `dry_run=true`
+  (`dapp_lifecycle` and `load_dapp` previously applied on first call).
+
+- Establish the first source-only public toolkit release.
+- Export a coherent installed CMake authoring surface for CPU and CUDA dApps.
+- Provide reference Class A, B, and C modules, process workers, packaging tools, and validation suites.
+- Add clean-install consumer, ABI compiler-matrix, sanitizer, package-integrity, and lifecycle gates.
+- Add the E3AP SCTP observer path: Python examples (`examples/e3_telemetry_python`) that subscribe to PUSCH, SRS/DM-RS, and gNB-metrics telemetry and run management requests over E3AP; the installed `dapp_sdk` component now ships `ocudu_dapp_e3ap_codec`, the E3AP/telemetry ASN.1 modules, and the `ocudu_e3` Python client.
+- Public CI: source the host bootstrap so `CMAKE_PREFIX_PATH` reaches the build jobs, assert the locked dApp ABI against the installed package, and run the REUSE and clang-format gates that the release process documents.
+- Bound reference CUDA channel interpolation for sparse pilot-coordinate sets with sorted-pilot binary search instead of an unbounded left/right scan; this preserves interpolation semantics while removing the wideband `O(nsc^2)` latency tail seen by Class-A dApps.
+- Fix the isolated-worker drain loop to skip lease-expired records instead of ending the drain, so a worker that spends seconds in CUDA context bring-up still reaches fresh publications behind a stale one.
+- Release hygiene for the first public tag: reformat the tree with clang-format 18 and pin that major in CI and `CONTRIBUTING.md`; restore upstream DLPack attribution (Apache-2.0) with `LICENSES/Apache-2.0.txt` and a `REUSE.toml` annotation; pin the CI base image by digest and `reuse` by version; install `asn1tools` in CI and add `OCUDU_DAPP_REQUIRE_PYTHON_EXAMPLES` so Python example suites fail configure instead of silently deregistering; compile the Python Class-C bindings in the CPU CI job; add a visible placeholder job when the CUDA release gate cannot run.
+- Remove never-shipped pre-1.0 compatibility surface: the `reference/common/class_a_cuda_contract.cuh` shim, the `reference_scheduler_algorithm.h` umbrella header, the `OCUDUDappToolkit` CMake compatibility package and aliases, and the deprecated `process_worker.py` alias. Add `include/ocudu_dapp_sdk/deprecated.h` (`OCUDU_DAPP_DEPRECATED`) as the compiler-visible half of the deprecation policy.
+- Documentation: section structure and a table of contents for `README.md`; header-level lifecycle documentation for `module_support.h` and `process_client.h`; sync `docs/known_limitations.md` with the host repository (schema-drift, telemetry attribution and real-time cost, Class-C streaming-delivery semantics); concrete reporting channels and a response SLA in `SECURITY.md`/`SUPPORT.md`; per-example Python `requirements.txt` files with bounded versions.
+
+The release remains unreleased until the qualification evidence listed in [docs/known_limitations.md](docs/known_limitations.md) is resolved or explicitly accepted.

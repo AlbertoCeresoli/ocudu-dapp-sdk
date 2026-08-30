@@ -1,0 +1,18 @@
+/* SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+
+/*! \page sdk_observer_authority Spectrum Observer and Authority
+
+Markdown companion: \c docs/observer_authority.md.
+
+\section sdk_obs_rules Rules
+
+- Zero map/quiet capability bits => observer: consume only, emit no result.
+- One active result authority across native and process placements.
+- Observer result is a protocol/security violation: routes withdrawn, incident.
+- Cross-dApp composition uses host-owned caches only.
+
+Reference observer: \c ref_spectrum_observerd_cpu.
+
+*/

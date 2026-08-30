@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+---
+BasedOnStyle: LLVM
+AccessModifierOffset: -2
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AllowShortFunctionsOnASingleLine: Inline
+AlwaysBreakTemplateDeclarations: true
+BraceWrapping:
+  AfterClass: true
+  AfterFunction: true
+  AfterStruct: false
+BreakBeforeBraces: Custom
+BreakConstructorInitializers: AfterColon
+ColumnLimit: 120
+ConstructorInitializerIndentWidth: 2
+IncludeBlocks: Merge
+IndentCaseLabels: true
+IndentWidth: 2
+InsertNewlineAtEOF: true
+NamespaceIndentation: None
+PointerAlignment: Left
+SortIncludes: true
+SortUsingDeclarations: true
+Standard: c++17
+UseTab: Never
+...

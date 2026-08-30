@@ -1,0 +1,29 @@
+/* SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+
+/*! \page sdk_class_c_cuda Class-C Native and Process Authoring
+
+Markdown companion: \c docs/class_c_cuda_process_authoring.md.
+
+\section sdk_c_place Placements
+
+Native CPU/CUDA, supervised process SHM, supervised process CUDA-IPC, and
+independent portable E3 consumers. Producers never wait.
+
+Python research packages (\c class_c_python_*d) use the supervised process path
+only; CPython is not supported for Class-A/B or in-process MODULEs and is not a
+production performance path.
+
+\section sdk_c_export CUDA process export pool
+
+One D2D snapshot per publication into a fixed route-owned pool; worker imports
+handles once; lease completion reclaims slots. Honest one-copy isolation, not a
+malicious-GPU security boundary.
+
+\section sdk_c_obs Authority
+
+Single spectrum result authority; observers may coexist. See
+\ref sdk_observer_authority.
+
+*/

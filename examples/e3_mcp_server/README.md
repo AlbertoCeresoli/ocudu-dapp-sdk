@@ -34,7 +34,7 @@ and ASN.1 schemas are not next to this checkout or installed under
 
 ## What the assistant gets
 
-The server registers **27 tools** (19 observe, 8 act), 8 resources and 2
+The server registers **28 tools** (20 observe, 8 act), 8 resources and 2
 prompts. The tables below group them; the per-tool argument reference is
 [`docs/mcp_companion.md` §4](../../docs/mcp_companion.md#4-tool-reference).
 
@@ -94,4 +94,4 @@ runtime-mutable (band, bandwidth, TDD pattern, PRACH) are read-only in
 session: framing, tool listing (and hiding in read-only mode), sector-model
 queries, the exact management requests built for `release_ue` and
 `set_dapp_config`, resources and prompts. Live behaviour is verified against
-the reference cell in the SDK release notes.
+the reference cell in `CHANGELOG.md` and the release record.

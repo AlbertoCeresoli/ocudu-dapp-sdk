@@ -1,0 +1,39 @@
+/* SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+
+/*! \page sdk_tools SDK and Host Tools
+
+Markdown companion: \c docs/tools.md.
+
+\section sdk_tools_scaffold Scaffold
+
+\c tools/scaffold_class_a_cuda.py generates an external Class-A CUDA project
+(\c ce, \c equalizer, or \c receiver) that depends only on installed
+\c OCUDUDAppSDK and refuses to overwrite an existing path.
+
+\section sdk_tools_certify Certifier
+
+\c certify_class_a_cuda loads a final DSO through the public ABI, runs the full
+null-configuration lifecycle, exercises concurrent workers and streams, and
+checks the declared shape/QAM/DM-RS matrix with poisoned-buffer canaries.
+Optional model arguments exercise receiver model generations.
+
+\section sdk_tools_model Model helper
+
+\c make_receiver_cuda_model emits the reference receiver model artifact for
+demos only. Product packages must supply their own exporter.
+
+\section sdk_tools_python_example Python Class-C example
+
+\c examples/class_c_e3_python demonstrates Class-C out-of-process sensing with
+PyTorch (supervised process packages + optional portable E3). Research only;
+not Class-A/B or in-process MODULEs. See \c examples/class_c_e3_python/README.md
+and \c docs/tools.md.
+
+\section sdk_tools_host Host tools
+
+Installed with OCUDU: \c ocudu-dapp-package, \c ocudu-dapp-preflight,
+\c ocudu-dappctl, and the Python E3 client. See OCUDU E3 management documentation.
+
+*/

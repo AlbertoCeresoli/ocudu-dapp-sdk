@@ -1,0 +1,44 @@
+/* SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+
+/*! \page sdk_class_b Class-B Scheduler Authoring
+
+Markdown companions:
+- Packaging / deadline / accelerators: \c docs/class_b_accelerator_authoring.md
+- Baseline pipeline (MCS / pack / TPC): \c docs/class_b_scheduler_baseline.md
+
+\section sdk_b_boundary Boundary
+
+Synchronous in-process host records; ~100 us complete boundary; conventional
+result retained on error or evaluation mode. No inherited PUSCH stream.
+
+\section sdk_b_baseline Baseline reference pipeline
+
+\c ref_scheduler_cpu runs \c run_scheduler_pipeline: rank, package OLLA,
+table-aware MCS, multi-UE free-VRB packing, UL TPC. Intent bits are gated by
+host \c allowed_output_flags (\c emit_only_allowed). Host YAML
+\c scheduler_allow_* must be accepted by the native invoke path
+(\c ALLOW_KNOWN_MASK). See the baseline Markdown guide for algorithms and the
+source map under \c reference/common/reference_scheduler_pipeline.cpp.
+
+\section sdk_b_accel Internal accelerators
+
+Declaring \c cuda admits an accelerator backend for reporting. The module owns
+transfers and synchronization and must return host intent before the deadline.
+No resident Class-B tensor ABI in v1. Reference remains \c ref_scheduler_cpu.
+
+\section sdk_b_eval Evaluation mode
+
+DU \c scheduler_evaluation_only measures the dApp while discarding valid
+decisions. Not lifecycle SHADOW.
+
+\section sdk_b_run Enable on a DU
+
+Reference \c ref_scheduler_cpu (UUID \c …000006): stage package, YAML with
+evaluation then \c scheduler_allow_* + \c scheduler_evaluation_only:false,
+E3 load in-process/cpu → prepare → arm → shadow → activate.
+Full cookbook: Markdown \c docs/run_examples.md §3 and
+\c docs/class_b_accelerator_authoring.md (enable section).
+
+*/

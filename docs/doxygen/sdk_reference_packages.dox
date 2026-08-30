@@ -1,0 +1,41 @@
+/* SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+
+/*! \page sdk_reference_packages Reference Package Inventory
+
+Markdown companion: \c docs/reference_packages.md.
+Enable/run every package: \c docs/run_examples.md.
+
+\section sdk_ref_a Class A
+
+CPU and CUDA modules for CE (\c 0x00010003), CE+EQ (\c 0x00010004), and
+receiver (\c 0x00010005): \c ref_channel_estimator_*, \c ref_equalizer_*,
+\c ref_receiver_*. CUDA variants require resident device tensors and inherit
+\c invocation.execution_stream.
+
+\section sdk_ref_b Class B
+
+\c ref_scheduler_cpu only. Baseline-replica host-record pipeline (rank / OLLA /
+MCS / multi-UE pack / TPC) plus optional PRB avoid mask; emits only host-allowed
+intents. See \ref sdk_class_b and \c docs/class_b_scheduler_baseline.md.
+
+\section sdk_ref_c Class C
+
+Native CPU/CUDA spectrum and SRS--ISAC; process workers
+\c ref_spectrumd_*, \c ref_srs_isacd_*, \c ref_spectrum_observerd_cpu; CUDA-IPC
+workers \c ref_spectrumd_cuda and \c ref_srs_isacd_cuda. Portable E3 consumers
+\c ref_spectrum_e3_cpu and \c ref_srs_isac_e3_cpu are independent binaries, not
+catalog packages.
+
+Python research examples (\c examples/class_c_e3_python): catalog packages
+\c class_c_python_spectrumd / \c class_c_python_srs_isacd and optional portable
+E3. Python is Class-C out-of-process only and not a production performance path.
+
+\section sdk_ref_test Test-only
+
+Joint multi-interface, multi-input fusion, failure gallery, and certifier-bad
+modules exist only when \c BUILD_TESTING is enabled. Do not deploy them to
+production catalogs.
+
+*/
