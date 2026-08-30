@@ -1,0 +1,50 @@
+# SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+#
+# Single find_package for the open dApp SDK (ocudu-dapp-sdk install).
+#
+#   find_package(OCUDUDapp 0.1 CONFIG REQUIRED)
+#   # Host ABI is a dependency (install OCUDUDAppSDK from ocudu, or same prefix):
+#   #   OCUDU::DAppSDK  and  OCUDUDapp::DAppSDK  (alias)
+#   # Open helpers:
+#   #   OCUDUDapp::reference_support          # module_support + package config mgmt
+#   #   OCUDUDapp::reference_*                 # replaceable CPU reference algorithms
+#   #   OCUDUDapp::process_client              # supervised Class-C client
+#   #   OCUDUDapp::portable_e3_consumer       # out-of-process Class-C E3 client (PIC)
+#   #   OCUDUDapp::ref_*_cuda_algorithm        # replaceable CUDA reference algorithms
+#   #   OCUDUDapp::process_cuda_client         # CUDA Class-C process import
+#   # Python extension (if built): lib/python/ocudu_dapp_class_c_e3*.so
+
+@PACKAGE_INIT@
+
+set(OCUDUDapp_VERSION "@PROJECT_VERSION@")
+set(OCUDUDapp_VERSION_MAJOR @PROJECT_VERSION_MAJOR@)
+set(OCUDUDapp_VERSION_MINOR @PROJECT_VERSION_MINOR@)
+set(OCUDUDapp_VERSION_PATCH @PROJECT_VERSION_PATCH@)
+set(OCUDUDapp_ABI_MAJOR 1)
+set(OCUDUDapp_ABI_MINOR 0)
+set(OCUDUDapp_CUDA_AVAILABLE @OCUDU_DAPP_TOOLKIT_CUDA_AVAILABLE@)
+set(OCUDUDapp_PORTABLE_E3_AVAILABLE @OCUDU_DAPP_TOOLKIT_PORTABLE_E3_AVAILABLE@)
+
+include(CMakeFindDependencyMacro)
+find_dependency(OCUDUDAppSDK 1.0 CONFIG)
+find_dependency(FlatBuffers CONFIG)
+if(OCUDUDapp_CUDA_AVAILABLE)
+  find_dependency(CUDAToolkit)
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/OCUDUDappTargets.cmake")
+
+if(NOT TARGET OCUDUDapp::reference_support)
+  message(FATAL_ERROR "OCUDUDapp targets missing (broken install of ocudu-dapp-sdk)")
+endif()
+
+# One alias for the host ABI so vendors can link only OCUDUDapp::*.
+if(TARGET OCUDU::DAppSDK AND NOT TARGET OCUDUDapp::DAppSDK)
+  add_library(OCUDUDapp::DAppSDK INTERFACE IMPORTED)
+  set_target_properties(OCUDUDapp::DAppSDK PROPERTIES
+    INTERFACE_LINK_LIBRARIES OCUDU::DAppSDK)
+endif()
+
+
+check_required_components(OCUDUDapp)

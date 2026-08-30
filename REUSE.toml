@@ -1,0 +1,19 @@
+version = 1
+SPDX-PackageName = "ocudu-dapp-sdk"
+SPDX-PackageSupplier = "DeepSig Inc."
+SPDX-PackageDownloadLocation = "https://gitlab.com/ocudu/work_groups/wg2_ai_ran/ocudu-dapp-sdk"
+
+[[annotations]]
+path = ["LICENSES/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "Copyright (C) 2026 DeepSig Inc."
+SPDX-License-Identifier = "BSD-3-Clause-Clear"
+
+# Vendored third-party: minimal DLPack C ABI header, Apache-2.0 upstream
+# (https://github.com/dmlc/dlpack). The in-file SPDX tags are authoritative;
+# this annotation documents the third-party origin for SBOM consumers.
+[[annotations]]
+path = ["examples/class_c_e3_python/bindings/dlpack.h"]
+precedence = "closest"
+SPDX-FileCopyrightText = "Copyright (c) 2017 by DLPack Contributors"
+SPDX-License-Identifier = "Apache-2.0"

@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+# Normalize line endings.
+* text=auto eol=lf
+*.png binary
+*.h5 binary
+
+# Keep CI and repo scaffolding out of `git archive` release tarballs.
+.gitlab export-ignore
+.gitlab-ci.yml export-ignore
+.gitattributes export-ignore
+.editorconfig export-ignore
+CODEOWNERS export-ignore
