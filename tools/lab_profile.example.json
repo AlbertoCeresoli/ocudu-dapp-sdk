@@ -1,0 +1,34 @@
+{
+  "schema": "ocudu.dapp.lab_profile.v1",
+  "paths": {
+    "sdk_build": "/path/to/ocudu-dapp-sdk/build-cuda",
+    "package_dir": "/path/to/ocudu-dapp-sdk/build-cuda",
+    "odu": "/path/to/ocudu/build-gpu-release/apps/du/odu",
+    "preflight": "/path/to/ocudu/build-gpu-release/apps/tools/dapp_preflight/ocudu-dapp-preflight",
+    "dappctl": "/path/to/ocudu/apps/tools/dappctl/ocudu_dappctl.py",
+    "e3_schema": "/path/to/ocudu/schemas/e3/e3sm-ocudu-dapp-mgmt-v1.asn1"
+  },
+  "tiers": {
+    "packaging": true,
+    "algorithm": true,
+    "system": false
+  },
+  "packaging": {
+    "certify": [
+      ["ref_equalizer_cuda.so", "0x00010004"],
+      ["ref_receiver_cuda.so", "0x00010005"],
+      ["ref_channel_estimator_cuda.so", "0x00010003"]
+    ],
+    "certify_shape_set": "compact"
+  },
+  "algorithm": {
+    "eq_so": "ref_equalizer_cuda.so",
+    "rx_so": "ref_receiver_cuda.so",
+    "mode": "all",
+    "quick": true
+  },
+  "system": {
+    "matrix_script": "tests/run_dummy_ru_matrix.py",
+    "time_scaling": 2
+  }
+}

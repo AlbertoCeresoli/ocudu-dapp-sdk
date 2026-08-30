@@ -1,0 +1,139 @@
+# SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+stages:
+  - verify
+  - gpu
+
+variables:
+  # Pinned by digest for reproducible pipelines (ubuntu:24.04 as of 2026-08-27).
+  # Update deliberately: resolve the new digest, then re-verify the clang-format
+  # major and apt package versions the jobs depend on.
+  OCUDU_BUILDER_IMAGE: "ubuntu:24.04@sha256:33ceb71981b602c1a7443a53469e4dba065f7503eab3078a2d7a57a2ab987517"
+  OCUDU_CI_JOBS: "2"
+
+release metadata and docs:
+  stage: verify
+  image: ${OCUDU_BUILDER_IMAGE}
+  before_script:
+    - .gitlab/ci/install_public_ci_deps.sh docs
+  script:
+    - python3 tools/check_release_docs.py
+    - python3 -m pip install --quiet --break-system-packages 'reuse==6.2.0'
+    - python3 -m reuse lint
+    - >-
+      git ls-files '*.h' '*.cpp' '*.cu' '*.cuh'
+      | xargs clang-format --dry-run --Werror
+
+.cpu:
+  stage: verify
+  image: ${OCUDU_BUILDER_IMAGE}
+  before_script:
+    - .gitlab/ci/install_public_ci_deps.sh build
+    # Sourced (not executed) so OCUDU_HOST_INSTALL_PREFIX reaches the script: section.
+    - source .gitlab/ci/bootstrap_host_sdk.sh
+  artifacts:
+    when: always
+    reports:
+      junit: build-ci/ctest*.xml
+    paths:
+      - build-ci/ctest*.xml
+      - build-ci/Testing/Temporary/LastTest.log
+    expire_in: 14 days
+
+cpu release and ABI:
+  extends: .cpu
+  script:
+    - >-
+      cmake -S . -B build-ci -G Ninja
+      -DCMAKE_BUILD_TYPE=Release
+      -DCMAKE_PREFIX_PATH="${OCUDU_HOST_INSTALL_PREFIX}"
+      -DOCUDU_DAPP_BUILD_CUDA_EXAMPLES=OFF
+      -DOCUDU_DAPP_BUILD_PYTHON_CLASS_C=ON
+      -DOCUDU_DAPP_REF_EXTRAS=ON
+      -DOCUDU_DAPP_REQUIRE_ABI_COMPILER_MATRIX=ON
+      -DOCUDU_DAPP_REQUIRE_PYTHON_EXAMPLES=ON
+    - cmake --build build-ci --parallel "${OCUDU_CI_JOBS}"
+    - ctest --test-dir build-ci --output-on-failure --output-junit ctest.xml -j"${OCUDU_CI_JOBS}"
+
+cpu asan ubsan:
+  extends: .cpu
+  variables:
+    ASAN_OPTIONS: "detect_leaks=1:halt_on_error=1:strict_string_checks=1"
+    UBSAN_OPTIONS: "halt_on_error=1:print_stacktrace=1"
+  script:
+    - >-
+      cmake -S . -B build-ci -G Ninja
+      -DCMAKE_BUILD_TYPE=Debug
+      -DCMAKE_PREFIX_PATH="${OCUDU_HOST_INSTALL_PREFIX}"
+      -DOCUDU_DAPP_BUILD_CUDA_EXAMPLES=OFF
+      -DOCUDU_DAPP_BUILD_PYTHON_CLASS_C=OFF
+      -DOCUDU_DAPP_REF_EXTRAS=ON
+      -DOCUDU_DAPP_REQUIRE_ABI_COMPILER_MATRIX=ON
+      -DOCUDU_DAPP_REQUIRE_PYTHON_EXAMPLES=ON
+      -DOCUDU_DAPP_ENABLE_ASAN=ON
+      -DOCUDU_DAPP_ENABLE_UBSAN=ON
+    - cmake --build build-ci --parallel "${OCUDU_CI_JOBS}"
+    - ldd build-ci/process_client_test | grep -E 'libasan|libclang_rt.asan'
+    - >-
+      ctest --test-dir build-ci --output-on-failure
+      --output-junit ctest.xml -j1 -E '^process_worker\.'
+    - >-
+      env ASAN_OPTIONS=detect_leaks=0:halt_on_error=1:strict_string_checks=1
+      ctest --test-dir build-ci --output-on-failure
+      --output-junit ctest-process-workers.xml -j1 -R '^process_worker\.'
+
+# docs/releasing.md lists the CUDA suite as a release gate. When the runner
+# variables below are unset (fresh clone, fork) the real job cannot run, so
+# this placeholder makes the gap visible in the pipeline instead of the gate
+# silently passing by absence. Set OCUDU_DAPP_CUDA_RUNNER_TAG and
+# OCUDU_CUDA_ARCHITECTURES as CI/CD variables to enable the real job.
+
+    - cmake --install build-ci --prefix "${CI_PROJECT_DIR}/install-ci"
+    - cmake -S examples/vendor_min -B build-vendor-ci
+      -DCMAKE_PREFIX_PATH="${OCUDU_HOST_INSTALL_PREFIX};${CI_PROJECT_DIR}/install-ci"
+    - cmake --build build-vendor-ci --parallel 8
+
+cuda release unavailable:
+  stage: gpu
+  image: ${OCUDU_BUILDER_IMAGE}
+  rules:
+    - if: '$OCUDU_DAPP_CUDA_RUNNER_TAG == null || $OCUDU_CUDA_ARCHITECTURES == null'
+  allow_failure: true
+  script:
+    - echo "WARNING - the CUDA release gate did NOT run - no CUDA runner configured."
+    - echo "Class-A CUDA modules, certify negative tests, scaffold, l1_validation and vendor_min are untested."
+    - exit 1
+
+cuda release:
+  stage: gpu
+  tags:
+    - ${OCUDU_DAPP_CUDA_RUNNER_TAG}
+  rules:
+    - if: '$OCUDU_DAPP_CUDA_RUNNER_TAG && $OCUDU_CUDA_ARCHITECTURES'
+  variables:
+    OCUDU_HOST_ENABLE_CUDA: "ON"
+  before_script:
+    - nvidia-smi
+    - nvcc --version
+    - source .gitlab/ci/bootstrap_host_sdk.sh
+  script:
+    - >-
+      cmake -S . -B build-ci -G Ninja
+      -DCMAKE_BUILD_TYPE=Release
+      -DCMAKE_PREFIX_PATH="${OCUDU_HOST_INSTALL_PREFIX}"
+      -DOCUDU_DAPP_BUILD_CUDA_EXAMPLES=ON
+      -DOCUDU_DAPP_BUILD_PYTHON_CLASS_C=OFF
+      -DOCUDU_DAPP_REF_EXTRAS=ON
+      -DOCUDU_DAPP_REQUIRE_ABI_COMPILER_MATRIX=ON
+      -DCMAKE_CUDA_ARCHITECTURES="${OCUDU_CUDA_ARCHITECTURES}"
+    - cmake --build build-ci --parallel "${OCUDU_CI_JOBS}"
+    - ctest --test-dir build-ci --output-on-failure --output-junit ctest.xml -j1
+  artifacts:
+    when: always
+    reports:
+      junit: build-ci/ctest*.xml
+    paths:
+      - build-ci/ctest*.xml
+      - build-ci/Testing/Temporary/LastTest.log
+    expire_in: 14 days

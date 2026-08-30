@@ -1,0 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+#
+# E3AP observer example dependencies. Upper bounds track the majors these
+# examples are tested against; relax deliberately, not by default.
+asn1tools>=0.166,<1
+numpy>=1.24,<3
+flatbuffers>=23.5,<26
+h5py>=3.10,<4

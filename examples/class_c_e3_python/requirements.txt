@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+#
+# Research / education dependencies for the Class-C Python example.
+# Production RAN sensing should use native C++/CUDA packages instead.
+#
+# Sensing (required):
+#   pip install torch
+#   # CUDA labs — pick a wheel for your platform:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu124
+#
+# Build the native extensions (CMake also needs this):
+#   pip install pybind11
+#
+# Upper bounds track the majors this example is tested against; relax
+# deliberately, not by default.
+torch>=2.0,<3
+numpy>=1.24,<3
+pybind11>=2.11,<4

@@ -1,0 +1,151 @@
+# SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+# Public ABI v1 layout fingerprint (LP64). Regenerated when scheduler_input grew.
+value OCUDU_DAPP_ABI_MAJOR_V1 1
+value OCUDU_DAPP_ABI_MINOR_V1 0
+value OCUDU_DAPP_PROCESS_REQUIRED_CAPABILITIES_V1 31
+value OCUDU_DAPP_PROCESS_CAP_CUDA_IPC_V1 32
+value OCUDU_DAPP_PROCESS_CAP_MULTI_INTERFACE_V1 64
+value OCUDU_DAPP_PROCESS_MAX_INTERFACES_V1 64
+value OCUDU_DAPP_ROUTE_DESCRIPTOR_ACCELERATOR_EXPORT_V1 3
+value OCUDU_DAPP_ROUTE_DESCRIPTOR_CUDA_COUNT_V1 4
+value OCUDU_DAPP_ROUTE_TRANSPORT_CPU_SHARED_RING_V1 0
+value OCUDU_DAPP_ROUTE_TRANSPORT_CUDA_IPC_EXPORT_V1 1
+value OCUDU_DAPP_INTERFACE_SPECTRUM_V1 65537
+value OCUDU_DAPP_INTERFACE_SRS_ISAC_V1 65538
+value OCUDU_DAPP_INTERFACE_CHANNEL_ESTIMATOR_V1 65539
+value OCUDU_DAPP_INTERFACE_EQUALIZER_V1 65540
+value OCUDU_DAPP_INTERFACE_RECEIVER_V1 65541
+value OCUDU_DAPP_METADATA_RECEIVER_METRICS_V1 65795
+value OCUDU_DAPP_RECEIVER_METRICS_VALID_V1 1
+value OCUDU_DAPP_INTERFACE_SCHEDULER_V1 65542
+value OCUDU_DAPP_SCHEDULER_CANDIDATE_BASE_SIZE_V1 88
+value OCUDU_DAPP_SCHEDULER_CANDIDATE_BLER_COUNT_SIZE_V1 92
+value OCUDU_DAPP_SCHEDULER_BLER_WINDOW_SIZE_V1 64
+value OCUDU_DAPP_PUSCH_CAP_RESIDENT_ACCELERATOR_V1 1
+value OCUDU_DAPP_LAYOUT_PUSCH_CHANNEL_PORT_LAYER_SYMBOL_SUBCARRIER_V1 65795
+value OCUDU_DAPP_LAYOUT_PUSCH_EQUALIZED_DATA_RE_LAYER_V1 65798
+value OCUDU_DAPP_LAYOUT_PUSCH_POST_EQ_NOISE_DATA_RE_LAYER_V1 65799
+value OCUDU_DAPP_LAYOUT_PUSCH_LLR_DATA_RE_LAYER_BIT_V1 65797
+value OCUDU_DAPP_LAYOUT_SRS_CHANNEL_RX_TX_FREQUENCY_CF32_V1 66049
+type ocudu_dapp_abi_header_v1 8 4
+type ocudu_dapp_blob_view_v1 16 8
+type ocudu_dapp_radio_time_v1 8 2
+type ocudu_dapp_tensor_view_v1 296 8
+type ocudu_dapp_invocation_v1 112 8
+type ocudu_dapp_context_header_v1 120 8
+type ocudu_dapp_host_api_v1 184 8
+type ocudu_dapp_worker_api_v1 72 8
+type ocudu_dapp_interface_descriptor_v1 104 8
+type ocudu_dapp_module_v1 248 8
+type ocudu_dapp_host_info_v1 136 8
+type ocudu_dapp_value_v1 40 8
+type ocudu_dapp_config_descriptor_v1 184 8
+type ocudu_dapp_config_entry_v1 64 8
+type ocudu_dapp_config_update_v1 64 8
+type ocudu_dapp_metric_descriptor_v1 72 8
+type ocudu_dapp_metric_sample_v1 72 8
+type ocudu_dapp_model_request_v1 88 8
+type ocudu_dapp_management_v1 144 8
+type ocudu_dapp_typed_metadata_v1 32 8
+type ocudu_dapp_pusch_profile_v1 88 8
+type ocudu_dapp_pusch_metadata_v1 680 8
+type ocudu_dapp_dmrs_metadata_v1 672 8
+type ocudu_dapp_channel_estimator_input_v1 472 8
+type ocudu_dapp_channel_estimator_output_v1 624 8
+type ocudu_dapp_channel_estimator_interface_v1 144 8
+type ocudu_dapp_equalizer_input_v1 472 8
+type ocudu_dapp_equalizer_output_v1 920 8
+type ocudu_dapp_equalizer_interface_v1 144 8
+type ocudu_dapp_receiver_input_v1 472 8
+type ocudu_dapp_receiver_metrics_v1 336 8
+type ocudu_dapp_receiver_output_v1 368 8
+type ocudu_dapp_receiver_interface_v1 144 8
+type ocudu_dapp_scheduler_candidate_v1 104 8
+type ocudu_dapp_scheduler_input_v1 1024 8
+type ocudu_dapp_scheduler_intent_v1 72 8
+type ocudu_dapp_scheduler_output_v1 368 8
+type ocudu_dapp_scheduler_interface_v1 144 8
+type ocudu_dapp_spectrum_slot_metadata_v1 104 8
+type ocudu_dapp_spectrum_input_v1 744 8
+type ocudu_dapp_spectrum_interference_map_v1 496 8
+type ocudu_dapp_spectrum_interface_v1 144 8
+type ocudu_dapp_srs_isac_metadata_v1 128 8
+type ocudu_dapp_srs_isac_input_v1 448 8
+type ocudu_dapp_srs_isac_cir_preview_v1 456 8
+type ocudu_dapp_srs_isac_interface_v1 144 8
+type ocudu_dapp_ul_resource_span_v1 40 8
+type ocudu_dapp_ul_resource_plan_v1 504 8
+type ocudu_dapp_quiet_period_intent_v1 120 8
+type ocudu_dapp_quiet_period_reservation_v1 280 8
+type ocudu_dapp_control_header_v1 24 8
+type ocudu_dapp_route_offer_v1 64 8
+type ocudu_dapp_route_ready_v1 32 8
+type ocudu_dapp_process_interface_binding_v1 8 4
+type ocudu_dapp_route_bundle_v1 576 8
+type ocudu_dapp_route_bundle_ready_v1 48 8
+type ocudu_dapp_publication_record_header_v1 64 8
+type ocudu_dapp_cuda_export_header_v1 64 8
+type ocudu_dapp_cuda_export_slot_v1 192 8
+field ocudu_dapp_tensor_view_v1.native_handle 48
+field ocudu_dapp_tensor_view_v1.dimensions 72
+field ocudu_dapp_tensor_view_v1.layout_id 200
+field ocudu_dapp_tensor_view_v1.completion_token 216
+field ocudu_dapp_tensor_view_v1.reserved 232
+field ocudu_dapp_invocation_v1.execution_stream 40
+field ocudu_dapp_invocation_v1.reserved 64
+field ocudu_dapp_worker_api_v1.create_worker_context 8
+field ocudu_dapp_worker_api_v1.reserved 24
+field ocudu_dapp_interface_descriptor_v1.interface_vtable 32
+field ocudu_dapp_interface_descriptor_v1.use_case_profile 48
+field ocudu_dapp_interface_descriptor_v1.reserved 56
+field ocudu_dapp_module_v1.interfaces 48
+field ocudu_dapp_module_v1.create 56
+field ocudu_dapp_module_v1.management 120
+field ocudu_dapp_module_v1.reserved 128
+field ocudu_dapp_pusch_metadata_v1.data_re_mask 48
+field ocudu_dapp_pusch_metadata_v1.data_re_indices 344
+field ocudu_dapp_pusch_metadata_v1.reserved 648
+field ocudu_dapp_dmrs_metadata_v1.reference_symbols 16
+field ocudu_dapp_dmrs_metadata_v1.coordinates 312
+field ocudu_dapp_dmrs_metadata_v1.reserved 616
+field ocudu_dapp_channel_estimator_input_v1.pusch 408
+field ocudu_dapp_channel_estimator_output_v1.channel_estimates 0
+field ocudu_dapp_equalizer_output_v1.equalized_symbols 296
+field ocudu_dapp_equalizer_output_v1.post_equalization_noise 592
+field ocudu_dapp_receiver_metrics_v1.post_equalization_noise 8
+field ocudu_dapp_receiver_metrics_v1.reserved 304
+field ocudu_dapp_receiver_output_v1.llrs 0
+field ocudu_dapp_receiver_output_v1.metrics 328
+field ocudu_dapp_receiver_output_v1.confidence_q16 360
+field ocudu_dapp_receiver_output_v1.reserved0 364
+field ocudu_dapp_scheduler_candidate_v1.hol_delay_us 32
+field ocudu_dapp_scheduler_candidate_v1.average_rate_bps 40
+field ocudu_dapp_scheduler_candidate_v1.bler 64
+field ocudu_dapp_scheduler_candidate_v1.bler_nof_observations 88
+field ocudu_dapp_scheduler_candidate_v1.reserved 96
+field ocudu_dapp_scheduler_input_v1.candidates 144
+field ocudu_dapp_scheduler_input_v1.optional_interference_mask 272
+field ocudu_dapp_scheduler_output_v1.intents 8
+field ocudu_dapp_scheduler_output_v1.avoid_prb_mask 40
+field ocudu_dapp_spectrum_input_v1.uplink_resource_grid 112
+field ocudu_dapp_spectrum_interference_map_v1.prb_confidence 128
+field ocudu_dapp_srs_isac_input_v1.channel_estimates 112
+field ocudu_dapp_srs_isac_cir_preview_v1.tap_power 168
+field ocudu_dapp_route_offer_v1.transport_kind 32
+field ocudu_dapp_route_offer_v1.backend_id 36
+field ocudu_dapp_route_offer_v1.export_slot_count 40
+field ocudu_dapp_route_offer_v1.export_slot_capacity 48
+field ocudu_dapp_process_interface_binding_v1.route_count 4
+field ocudu_dapp_process_interface_binding_v1.state 7
+field ocudu_dapp_route_bundle_v1.interfaces 32
+field ocudu_dapp_route_bundle_v1.route_generation 16
+field ocudu_dapp_route_bundle_v1.bundle_id 24
+field ocudu_dapp_route_bundle_ready_v1.route_generation 16
+field ocudu_dapp_route_bundle_ready_v1.bundle_id 24
+field ocudu_dapp_publication_record_header_v1.tensor_offset 16
+field ocudu_dapp_publication_record_header_v1.publication_sequence 32
+field ocudu_dapp_cuda_export_header_v1.slot_count 24
+field ocudu_dapp_cuda_export_header_v1.slot_capacity 32
+field ocudu_dapp_cuda_export_slot_v1.memory_handle 24
+field ocudu_dapp_cuda_export_slot_v1.ready_event_handle 88

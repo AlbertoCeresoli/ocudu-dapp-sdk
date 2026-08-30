@@ -1,0 +1,49 @@
+# SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+#
+# Lab profile for the unified dapp_validate runner.
+# Copy and set paths for your machine; pass with: dapp_validate.py --profile path.yaml
+#
+# Ladder (same product story everywhere):
+#   packaging  → module contract / Class-A certify
+#   algorithm  → L1 golden/chain/sensitivity/tb (dlopen)
+#   system     → dummy-RU package matrix (optional)
+
+schema: ocudu.dapp.lab_profile.v1
+
+paths:
+  # Open reference SDK build (tools live here)
+  sdk_build: /path/to/ocudu-dapp-sdk/build-cuda
+  # Package catalog to validate (SDK build-cuda or vendor build)
+  package_dir: /path/to/ocudu-dapp-sdk/build-cuda
+  # Host tools (system tier only)
+  odu: /path/to/ocudu/build-gpu-release/apps/du/odu
+  preflight: /path/to/ocudu/build-gpu-release/apps/tools/dapp_preflight/ocudu-dapp-preflight
+  dappctl: /path/to/ocudu/apps/tools/dappctl/ocudu_dappctl.py
+  e3_schema: /path/to/ocudu/schemas/e3/e3sm-ocudu-dapp-mgmt-v1.asn1
+
+# Which tiers to run (default: all present)
+tiers:
+  packaging: true
+  algorithm: true
+  system: false          # enable when odu/preflight paths are valid
+
+packaging:
+  # Class-A CUDA packages: [so basename or absolute path, interface_id]
+  certify:
+    - [ref_equalizer_cuda.so, "0x00010004"]
+    - [ref_receiver_cuda.so, "0x00010005"]
+    - [ref_channel_estimator_cuda.so, "0x00010003"]
+  certify_shape_set: compact   # compact | boundaries
+
+algorithm:
+  # L1 suite (dlopen EQ + optional RX)
+  eq_so: ref_equalizer_cuda.so
+  rx_so: ref_receiver_cuda.so
+  mode: all              # all | golden | chain | sensitivity | tb
+  quick: true
+
+system:
+  # Invokes run_dummy_ru_matrix.py or host matrix harness when available
+  matrix_script: tests/run_dummy_ru_matrix.py
+  time_scaling: 2
