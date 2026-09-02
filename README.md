@@ -34,6 +34,8 @@ Matching **OCUDU-style Doxygen** pages live under [`docs/doxygen/`](docs/doxygen
 (`cmake --build <build> --target doxygen`). The host runtime publishes the same
 workflow as page `dapp_quickstart` plus dedicated E3 guides.
 
+**Read the papers first?** The quickstart repository ships two preview papers: the [architecture and tutorial paper](https://gitlab.com/ocudu/work_groups/wg2_ai_ran/ocudu-dapp-quickstart/-/blob/main/papers/ocudu_dapp_tutorial.pdf) and the [measured interface study](https://gitlab.com/ocudu/work_groups/wg2_ai_ran/ocudu-dapp-quickstart/-/blob/main/papers/ocudu_dapp_interface_study.pdf).
+
 ## Getting started — step-by-step tutorials
 
 New here? These tutorials walk the whole journey, from an empty vendor repo to
