@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
 # SPDX-License-Identifier: BSD-3-Clause-Clear
-# Public ABI v1 layout fingerprint (LP64). Regenerated when scheduler_input grew.
+# Public ABI v1 layout fingerprint (LP64), including optional receiver symbols.
+# The receiver metrics prefix remains 336 bytes; existing field offsets are unchanged.
 value OCUDU_DAPP_ABI_MAJOR_V1 1
 value OCUDU_DAPP_ABI_MINOR_V1 0
 value OCUDU_DAPP_PROCESS_REQUIRED_CAPABILITIES_V1 31
@@ -18,6 +19,9 @@ value OCUDU_DAPP_INTERFACE_EQUALIZER_V1 65540
 value OCUDU_DAPP_INTERFACE_RECEIVER_V1 65541
 value OCUDU_DAPP_METADATA_RECEIVER_METRICS_V1 65795
 value OCUDU_DAPP_RECEIVER_METRICS_VALID_V1 1
+value OCUDU_DAPP_RECEIVER_EQUALIZED_SYMBOLS_VALID_V1 2
+value OCUDU_DAPP_RECEIVER_KNOWN_OUTPUT_FLAGS_V1 3
+value OCUDU_DAPP_RECEIVER_EQUALIZED_SYMBOLS_MIN_SIZE_V1 632
 value OCUDU_DAPP_INTERFACE_SCHEDULER_V1 65542
 value OCUDU_DAPP_SCHEDULER_CANDIDATE_BASE_SIZE_V1 88
 value OCUDU_DAPP_SCHEDULER_CANDIDATE_BLER_COUNT_SIZE_V1 92
@@ -58,7 +62,7 @@ type ocudu_dapp_equalizer_input_v1 472 8
 type ocudu_dapp_equalizer_output_v1 920 8
 type ocudu_dapp_equalizer_interface_v1 144 8
 type ocudu_dapp_receiver_input_v1 472 8
-type ocudu_dapp_receiver_metrics_v1 336 8
+type ocudu_dapp_receiver_metrics_v1 632 8
 type ocudu_dapp_receiver_output_v1 368 8
 type ocudu_dapp_receiver_interface_v1 144 8
 type ocudu_dapp_scheduler_candidate_v1 104 8
@@ -115,6 +119,7 @@ field ocudu_dapp_equalizer_output_v1.equalized_symbols 296
 field ocudu_dapp_equalizer_output_v1.post_equalization_noise 592
 field ocudu_dapp_receiver_metrics_v1.post_equalization_noise 8
 field ocudu_dapp_receiver_metrics_v1.reserved 304
+field ocudu_dapp_receiver_metrics_v1.equalized_symbols 336
 field ocudu_dapp_receiver_output_v1.llrs 0
 field ocudu_dapp_receiver_output_v1.metrics 328
 field ocudu_dapp_receiver_output_v1.confidence_q16 360
@@ -149,3 +154,16 @@ field ocudu_dapp_cuda_export_header_v1.slot_count 24
 field ocudu_dapp_cuda_export_header_v1.slot_capacity 32
 field ocudu_dapp_cuda_export_slot_v1.memory_handle 24
 field ocudu_dapp_cuda_export_slot_v1.ready_event_handle 88
+value OCUDU_DAPP_RECEIVER_CAP_COMPLETION_V1 2
+value OCUDU_DAPP_HOST_CAP_RECEIVER_COMPLETION_V1 1
+type ocudu_dapp_receiver_receipt_v1 72 8
+type ocudu_dapp_receiver_completion_result_v1 48 8
+type ocudu_dapp_receiver_completion_api_v1 104 8
+field ocudu_dapp_receiver_receipt_v1.opaque 8
+field ocudu_dapp_receiver_completion_result_v1.ready 8
+field ocudu_dapp_receiver_completion_result_v1.valid 12
+field ocudu_dapp_receiver_completion_api_v1.invoke 8
+field ocudu_dapp_receiver_completion_api_v1.inspect 16
+field ocudu_dapp_receiver_completion_api_v1.release 24
+field ocudu_dapp_receiver_completion_api_v1.retire 32
+field ocudu_dapp_receiver_completion_api_v1.reserved 40

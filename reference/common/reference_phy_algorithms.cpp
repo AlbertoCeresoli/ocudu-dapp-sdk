@@ -17,6 +17,7 @@
 //   - thread_local workspaces avoid heap churn on every invoke.
 
 #include "ocudu_dapp_sdk/reference_phy_algorithms.h"
+#include "ocudu_dapp_sdk/receiver_symbol_storage.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -925,6 +926,7 @@ ocudu_dapp_status_v1 ocudu::dapp::reference::equalize(const ocudu_dapp_equalizer
 ocudu_dapp_status_v1 ocudu::dapp::reference::receive(const ocudu_dapp_receiver_input_v1& input,
                                                      ocudu_dapp_receiver_output_v1&      output)
 {
+  output.reserved0 = 0;
   channel_state state;
   auto          status = validate_input(input.rx_grid, input.pusch, input.dmrs, state);
   if (status != OCUDU_DAPP_OK_V1 || state.pusch->nof_layers != 1) {
@@ -968,13 +970,42 @@ ocudu_dapp_status_v1 ocudu::dapp::reference::receive(const ocudu_dapp_receiver_i
       !valid_dimensions(output.llrs, {nof_data_re * modulation_order})) {
     return OCUDU_DAPP_INVALID_OUTPUT_V1;
   }
-  const auto* receiver_metrics =
-      metadata<ocudu_dapp_receiver_metrics_v1>(output.metrics, OCUDU_DAPP_METADATA_RECEIVER_METRICS_V1);
+  // Accept the legacy metrics prefix. The symbol tail is independently
+  // optional; sizeof(the newest struct) is not a minimum ABI requirement.
+  const ocudu_dapp_receiver_metrics_v1* receiver_metrics = nullptr;
+  if (output.metrics.metadata.data != nullptr || output.metrics.metadata.size != 0) {
+    constexpr size_t minimum = offsetof(ocudu_dapp_receiver_metrics_v1, reserved);
+    const auto& wrapper = output.metrics;
+    if (wrapper.struct_size < sizeof(wrapper) || wrapper.abi_major != OCUDU_DAPP_ABI_MAJOR_V1 ||
+        wrapper.metadata_schema_id != OCUDU_DAPP_METADATA_RECEIVER_METRICS_V1 || wrapper.metadata_schema_version != 1 ||
+        wrapper.metadata.data == nullptr || wrapper.metadata.size < minimum ||
+        reinterpret_cast<uintptr_t>(wrapper.metadata.data) % alignof(ocudu_dapp_receiver_metrics_v1) != 0) {
+      return OCUDU_DAPP_INVALID_OUTPUT_V1;
+    }
+    receiver_metrics = static_cast<const ocudu_dapp_receiver_metrics_v1*>(wrapper.metadata.data);
+    if (receiver_metrics->struct_size < minimum || receiver_metrics->struct_size > wrapper.metadata.size ||
+        receiver_metrics->abi_major != OCUDU_DAPP_ABI_MAJOR_V1) {
+      return OCUDU_DAPP_INVALID_OUTPUT_V1;
+    }
+  }
+  const auto* symbol_output = receiver_metrics != nullptr &&
+                                     receiver_metrics->struct_size >= OCUDU_DAPP_RECEIVER_EQUALIZED_SYMBOLS_MIN_SIZE_V1 &&
+                                     receiver_metrics->equalized_symbols.struct_size != 0
+                                 ? &receiver_metrics->equalized_symbols
+                                 : nullptr;
   if (receiver_metrics != nullptr &&
       (!host_tensor(receiver_metrics->post_equalization_noise, OCUDU_DAPP_ELEMENT_F32_V1, 2,
                     OCUDU_DAPP_ACCESS_WRITE_V1) ||
        receiver_metrics->post_equalization_noise.layout_id != OCUDU_DAPP_LAYOUT_PUSCH_POST_EQ_NOISE_DATA_RE_LAYER_V1 ||
        !valid_dimensions(receiver_metrics->post_equalization_noise, {nof_data_re, 1}))) {
+    return OCUDU_DAPP_INVALID_OUTPUT_V1;
+  }
+  if (symbol_output != nullptr &&
+      (!host_tensor(*symbol_output, OCUDU_DAPP_ELEMENT_CF32_V1, 2, OCUDU_DAPP_ACCESS_WRITE_V1) ||
+       symbol_output->layout_id != OCUDU_DAPP_LAYOUT_PUSCH_EQUALIZED_DATA_RE_LAYER_V1 ||
+       symbol_output->layout_version != 1 || !valid_dimensions(*symbol_output, {nof_data_re, 1}) ||
+       !receiver_symbol_storage_is_disjoint(*symbol_output, input, output, *state.pusch, *state.dmrs,
+                                            receiver_metrics->post_equalization_noise))) {
     return OCUDU_DAPP_INVALID_OUTPUT_V1;
   }
   status = estimate_plane(input.rx_grid, state);
@@ -1000,6 +1031,9 @@ ocudu_dapp_status_v1 ocudu::dapp::reference::receive(const ocudu_dapp_receiver_i
     const uint64_t data_index = output_index / modulation_order;
     if (receiver_metrics != nullptr) {
       *writable_at<float>(receiver_metrics->post_equalization_noise, data_index, 0) = noise[0];
+    }
+    if (symbol_output != nullptr) {
+      *writable_at<cf32>(*symbol_output, data_index, 0) = symbols[0];
     }
     int8_t* llrs = llr_base != nullptr ? llr_base + output_index : writable_at<int8_t>(output.llrs, output_index);
     demap_axis(symbols[0].real, noise[0], axis_bits, 0, llrs);
@@ -1040,6 +1074,9 @@ ocudu_dapp_status_v1 ocudu::dapp::reference::receive(const ocudu_dapp_receiver_i
   output.uci = {};
   if (receiver_metrics != nullptr) {
     output.reserved0 |= OCUDU_DAPP_RECEIVER_METRICS_VALID_V1;
+  }
+  if (symbol_output != nullptr) {
+    output.reserved0 |= OCUDU_DAPP_RECEIVER_EQUALIZED_SYMBOLS_VALID_V1;
   }
   output.confidence_q16 =
       output_index == 0 ? 0 : static_cast<uint32_t>(std::min<uint64_t>(65536, (confidence / output_index) * 512));

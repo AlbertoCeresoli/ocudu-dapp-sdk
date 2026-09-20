@@ -9,6 +9,7 @@
 #include <ocudu/dapp/use_cases/v1/coordination.h>
 #include <ocudu/dapp/use_cases/v1/equalizer.h>
 #include <ocudu/dapp/use_cases/v1/receiver.h>
+#include <ocudu/dapp/use_cases/v1/receiver_completion.h>
 #include <ocudu/dapp/use_cases/v1/scheduler.h>
 #include <ocudu/dapp/use_cases/v1/spectrum.h>
 #include <ocudu/dapp/use_cases/v1/srs_isac.h>
@@ -44,6 +45,9 @@ int main(void)
   PRINT_VALUE(OCUDU_DAPP_INTERFACE_RECEIVER_V1);
   PRINT_VALUE(OCUDU_DAPP_METADATA_RECEIVER_METRICS_V1);
   PRINT_VALUE(OCUDU_DAPP_RECEIVER_METRICS_VALID_V1);
+  PRINT_VALUE(OCUDU_DAPP_RECEIVER_EQUALIZED_SYMBOLS_VALID_V1);
+  PRINT_VALUE(OCUDU_DAPP_RECEIVER_KNOWN_OUTPUT_FLAGS_V1);
+  PRINT_VALUE(OCUDU_DAPP_RECEIVER_EQUALIZED_SYMBOLS_MIN_SIZE_V1);
   PRINT_VALUE(OCUDU_DAPP_INTERFACE_SCHEDULER_V1);
   PRINT_VALUE(OCUDU_DAPP_SCHEDULER_CANDIDATE_BASE_SIZE_V1);
   PRINT_VALUE(OCUDU_DAPP_SCHEDULER_CANDIDATE_BLER_COUNT_SIZE_V1);
@@ -143,6 +147,7 @@ int main(void)
   PRINT_FIELD(ocudu_dapp_equalizer_output_v1, post_equalization_noise);
   PRINT_FIELD(ocudu_dapp_receiver_metrics_v1, post_equalization_noise);
   PRINT_FIELD(ocudu_dapp_receiver_metrics_v1, reserved);
+  PRINT_FIELD(ocudu_dapp_receiver_metrics_v1, equalized_symbols);
   PRINT_FIELD(ocudu_dapp_receiver_output_v1, llrs);
   PRINT_FIELD(ocudu_dapp_receiver_output_v1, metrics);
   PRINT_FIELD(ocudu_dapp_receiver_output_v1, confidence_q16);
@@ -177,5 +182,18 @@ int main(void)
   PRINT_FIELD(ocudu_dapp_cuda_export_header_v1, slot_capacity);
   PRINT_FIELD(ocudu_dapp_cuda_export_slot_v1, memory_handle);
   PRINT_FIELD(ocudu_dapp_cuda_export_slot_v1, ready_event_handle);
+  PRINT_VALUE(OCUDU_DAPP_RECEIVER_CAP_COMPLETION_V1);
+  PRINT_VALUE(OCUDU_DAPP_HOST_CAP_RECEIVER_COMPLETION_V1);
+  PRINT_TYPE(ocudu_dapp_receiver_receipt_v1);
+  PRINT_TYPE(ocudu_dapp_receiver_completion_result_v1);
+  PRINT_TYPE(ocudu_dapp_receiver_completion_api_v1);
+  PRINT_FIELD(ocudu_dapp_receiver_receipt_v1, opaque);
+  PRINT_FIELD(ocudu_dapp_receiver_completion_result_v1, ready);
+  PRINT_FIELD(ocudu_dapp_receiver_completion_result_v1, valid);
+  PRINT_FIELD(ocudu_dapp_receiver_completion_api_v1, invoke);
+  PRINT_FIELD(ocudu_dapp_receiver_completion_api_v1, inspect);
+  PRINT_FIELD(ocudu_dapp_receiver_completion_api_v1, release);
+  PRINT_FIELD(ocudu_dapp_receiver_completion_api_v1, retire);
+  PRINT_FIELD(ocudu_dapp_receiver_completion_api_v1, reserved);
   return 0;
 }

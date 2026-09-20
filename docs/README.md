@@ -35,6 +35,7 @@ directory is Git-native (renders on GitLab). Matching Doxygen pages under
 | Topic | Markdown | Doxygen page |
 |-------|----------|--------------|
 | Class-A CUDA (CE / EQ / RX) | [class_a_cuda_authoring.md](class_a_cuda_authoring.md) (+ **host CSI / reserved[0]** + enable/run) | `sdk_class_a_cuda` |
+| Optional receiver constellation output | [receiver_symbol_output.md](receiver_symbol_output.md) | — |
 | Class-B scheduler / accelerators | [class_b_accelerator_authoring.md](class_b_accelerator_authoring.md) (+ **enable/run** section) | `sdk_class_b` |
 | Class-B baseline pipeline (MCS / pack / TPC) | [class_b_scheduler_baseline.md](class_b_scheduler_baseline.md) | `sdk_class_b` (baseline section) |
 | Class-C CUDA process workers | [class_c_cuda_process_authoring.md](class_c_cuda_process_authoring.md) | `sdk_class_c_cuda` |
@@ -49,6 +50,10 @@ directory is Git-native (renders on GitLab). Matching Doxygen pages under
 | Security model | [security_model.md](security_model.md) | — |
 | Compatibility matrix | [compatibility.md](compatibility.md) | — |
 | Known limitations | [known_limitations.md](known_limitations.md) | — |
+
+For opt-in asynchronous full receivers, see
+[receiver completion](receiver_completion.md). This extension requires an
+integrated host consumer and is not enabled merely by installing the headers.
 
 ## Build Doxygen HTML (OCUDU-style)
 
