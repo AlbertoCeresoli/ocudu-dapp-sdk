@@ -56,6 +56,32 @@ cpu release and ABI:
     - cmake --build build-ci --parallel "${OCUDU_CI_JOBS}"
     - ctest --test-dir build-ci --output-on-failure --output-junit ctest.xml -j"${OCUDU_CI_JOBS}"
 
+# Required in both repos: the SDK candidate must also run against the exact
+# paired host and real patched libe3, not just an installed ABI header snapshot.
+cross repository interoperability:
+  extends: .cpu
+  variables:
+    OCUDU_HOST_INTEROP: "ON"
+  script:
+    - >-
+      cmake -S . -B build-ci -G Ninja -DCMAKE_BUILD_TYPE=Release
+      -DCMAKE_PREFIX_PATH="${OCUDU_HOST_INSTALL_PREFIX}"
+      -DOCUDU_DAPP_BUILD_CUDA_EXAMPLES=OFF -DOCUDU_DAPP_BUILD_PYTHON_CLASS_C=OFF
+      -DOCUDU_DAPP_REF_EXTRAS=ON -DOCUDU_DAPP_REQUIRE_ABI_COMPILER_MATRIX=ON
+      -DOCUDU_DAPP_REQUIRE_PYTHON_EXAMPLES=ON
+    - cmake --build build-ci --parallel "${OCUDU_CI_JOBS}"
+    - OCUDU_E3AP_TEST_SERVER="${OCUDU_HOST_BUILD_DIR}/tests/unittests/dapp/e3ap_test_server" python3 "${OCUDU_HOST_SOURCE_DIR}/scripts/check_dapp_interop_gate.py" --profile sdk --build build-ci
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - build-ci/dapp-interop.xml
+        - .ci/ocudu-build/dapp-interop.xml
+    paths:
+      - build-ci/dapp-interop.log
+      - .ci/ocudu-build/dapp-interop.log
+    expire_in: 30 days
+
 cpu asan ubsan:
   extends: .cpu
   variables:

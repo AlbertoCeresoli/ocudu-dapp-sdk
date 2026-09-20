@@ -75,10 +75,6 @@ class LiveTests(unittest.TestCase):
                 time.sleep(0.1)
 
 
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
-
-
 class OfflineRoundTripTests(unittest.TestCase):
     """flatten() -> Hdf5Writer -> export_pusch_burst.export() without a gNB."""
 
@@ -151,3 +147,7 @@ class OfflineRoundTripTests(unittest.TestCase):
         self.assertNotIn("evm", exported)      # was NaN in the record
         self.assertAlmostEqual(exported["target_code_rate"], 0.55, places=5)
         self.assertEqual(data.size, len(samples))
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

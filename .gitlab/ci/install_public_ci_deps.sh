@@ -14,7 +14,7 @@ apt-get update
 packages=(ca-certificates git python3 python3-pip python3-numpy python3-h5py python3-flatbuffers clang-format-18)
 if [[ "${profile}" == "build" ]]; then
   packages+=(
-    build-essential clang cmake ninja-build pkg-config
+    build-essential clang cmake ninja-build pkg-config autoconf automake libtool bison flex
     flatbuffers-compiler libflatbuffers-dev libgtest-dev
     libboost-program-options-dev libconfig++-dev libfftw3-dev
     libmbedtls-dev libsctp-dev libyaml-cpp-dev

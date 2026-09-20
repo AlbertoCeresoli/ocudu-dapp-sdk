@@ -14,6 +14,7 @@ source "${script_dir}/ocudu-host.lock"
 : "${OCUDU_HOST_BUILD_DIR:=${CI_PROJECT_DIR:-$PWD}/.ci/ocudu-build}"
 : "${OCUDU_HOST_INSTALL_PREFIX:=${CI_PROJECT_DIR:-$PWD}/.ci/ocudu-install}"
 : "${OCUDU_HOST_ENABLE_CUDA:=OFF}"
+: "${OCUDU_HOST_INTEROP:=OFF}"
 : "${OCUDU_CI_JOBS:=2}"
 
 if [[ ! -d "${OCUDU_HOST_SOURCE_DIR}/.git" ]]; then
@@ -41,9 +42,19 @@ if [[ "${OCUDU_HOST_ENABLE_CUDA}" == "ON" ]]; then
   )
 fi
 
+interop_arguments=(-DBUILD_TESTING=OFF)
+if [[ "${OCUDU_HOST_INTEROP}" == "ON" ]]; then
+  git -C "${OCUDU_HOST_SOURCE_DIR}" submodule update --init --recursive
+  test -f "${OCUDU_HOST_SOURCE_DIR}/scripts/check_dapp_interop_gate.py" || {
+    echo "Pinned host lacks the mandatory interop gate; set OCUDU_HOST_REF to the reviewed paired host commit." >&2
+    exit 1
+  }
+  interop_arguments=(-DBUILD_TESTING=ON -DOCUDU_DAPP_LIBE3_INTEROP=ON)
+fi
+
 cmake -S "${OCUDU_HOST_SOURCE_DIR}" -B "${OCUDU_HOST_BUILD_DIR}" -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
-  -DBUILD_TESTING=OFF \
+  "${interop_arguments[@]}" \
   -DENABLE_DAPP=ON \
   -DENABLE_E3=ON \
   -DENABLE_E3_ASN1_CODEC=ON \
@@ -58,6 +69,12 @@ cmake --build "${OCUDU_HOST_BUILD_DIR}" --parallel "${OCUDU_CI_JOBS}" --target \
   ocudu_dapp_management ocudu_dapp_e3sm_asn1 ocudu_dapp_e3_codec ocudu_dapp_e3_client ocudu_dapp_e3ap_codec
 cmake --install "${OCUDU_HOST_BUILD_DIR}" \
   --prefix "${OCUDU_HOST_INSTALL_PREFIX}" --component dapp_sdk
+
+if [[ "${OCUDU_HOST_INTEROP}" == "ON" ]]; then
+  cmake --build "${OCUDU_HOST_BUILD_DIR}" --parallel "${OCUDU_CI_JOBS}" --target \
+    dapp_runtime_test dapp_telemetry_allocation_test e3ap_test_server libe3_interop_dapp libe3_interop_vectors ocudu-dappctl
+  python3 "${OCUDU_HOST_SOURCE_DIR}/scripts/check_dapp_interop_gate.py" --build "${OCUDU_HOST_BUILD_DIR}"
+fi
 
 # The lock records the public C ABI the SDK was validated against; refuse a host
 # install whose package config advertises a different major version.

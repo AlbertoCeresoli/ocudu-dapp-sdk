@@ -14,3 +14,15 @@
 8. Create a simple signed or protected `v0.1.0` tag on the default branch and attach immutable test/qualification reports to the release record.
 
 Do not tag while a required gate is failing. A waived gate must identify the owner, rationale, risk, and follow-up issue.
+
+The mandatory `cross repository interoperability` job also builds the paired
+host with real libe3 interoperability enabled and uses its fail-closed test
+inventory gate for both repositories. The paired host must contain
+`scripts/check_dapp_interop_gate.py`; update `.gitlab/ci/ocudu-host.lock` to the
+reviewed, published host commit, or provide `OCUDU_HOST_REF` explicitly. A missing
+host implementation/pin is a failing prerequisite, not a skipped success.
+
+The reference scheduler keeps fixed per-worker scratch for up to the public
+8192-candidate bound and 275 PRBs; evaluation and sorting allocate/free nothing.
+The CPU test instruments allocation at the maximum candidate count. This does
+not replace Class-B deadline qualification under real scheduler load.
