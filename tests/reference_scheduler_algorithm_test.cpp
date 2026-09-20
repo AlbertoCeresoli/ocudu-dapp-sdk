@@ -3,9 +3,75 @@
 
 #include "ocudu_dapp_sdk/reference_scheduler_pipeline.h"
 #include <array>
+#include <cstdlib>
 #include <gtest/gtest.h>
+#include <memory>
+#include <new>
+#include <vector>
 
 using namespace ocudu::dapp::reference;
+
+namespace {
+thread_local bool     measure_allocations = false;
+thread_local unsigned allocations         = 0;
+thread_local unsigned deallocations       = 0;
+} // namespace
+
+// Instrument only the invocation, never gtest setup/assertions. This catches
+// accidental reintroduction of vector/stable_sort temporary allocations.
+[[gnu::noinline]] void* operator new(std::size_t bytes)
+{
+  if (measure_allocations) {
+    ++allocations;
+  }
+  if (void* result = std::malloc(bytes == 0 ? 1 : bytes)) {
+    return result;
+  }
+  throw std::bad_alloc();
+}
+[[gnu::noinline]] void* operator new[](std::size_t bytes)
+{
+  return ::operator new(bytes);
+}
+[[gnu::noinline]] void* operator new(std::size_t bytes, const std::nothrow_t&) noexcept
+{
+  try {
+    return ::operator new(bytes);
+  } catch (...) {
+    return nullptr;
+  }
+}
+[[gnu::noinline]] void* operator new[](std::size_t bytes, const std::nothrow_t& tag) noexcept
+{
+  return ::operator new(bytes, tag);
+}
+[[gnu::noinline]] void operator delete(void* pointer) noexcept
+{
+  if (measure_allocations && pointer != nullptr) {
+    ++deallocations;
+  }
+  std::free(pointer);
+}
+[[gnu::noinline]] void operator delete[](void* pointer) noexcept
+{
+  ::operator delete(pointer);
+}
+[[gnu::noinline]] void operator delete(void* pointer, std::size_t) noexcept
+{
+  ::operator delete(pointer);
+}
+[[gnu::noinline]] void operator delete[](void* pointer, std::size_t) noexcept
+{
+  ::operator delete(pointer);
+}
+[[gnu::noinline]] void operator delete(void* pointer, const std::nothrow_t&) noexcept
+{
+  ::operator delete(pointer);
+}
+[[gnu::noinline]] void operator delete[](void* pointer, const std::nothrow_t&) noexcept
+{
+  ::operator delete(pointer);
+}
 
 namespace {
 
@@ -80,6 +146,48 @@ private:
 };
 
 } // namespace
+
+TEST(reference_scheduler_algorithm, maximum_candidate_evaluation_allocates_and_frees_nothing)
+{
+  fixture                                        data;
+  auto                                           state = std::make_unique<scheduler_reference_state>();
+  scheduler_reference_config                     config;
+  std::vector<ocudu_dapp_scheduler_candidate_v1> candidates(scheduler_reference_state::maximum_candidates);
+  std::vector<ocudu_dapp_scheduler_intent_v1>    intents(candidates.size());
+  for (uint32_t index = 0; index != candidates.size(); ++index) {
+    candidates[index]              = data.candidates[0];
+    candidates[index].candidate_id = index;
+    candidates[index].ue_index     = index;
+  }
+  data.input.nof_candidates   = candidates.size();
+  data.input.candidates       = candidates.data();
+  data.output.intents         = intents.data();
+  data.output.intent_capacity = intents.size();
+  allocations = deallocations = 0;
+  measure_allocations         = true;
+  const auto result           = run_scheduler_pipeline(data.input, data.output, config, *state);
+  measure_allocations         = false;
+  EXPECT_EQ(result, OCUDU_DAPP_OK_V1);
+  EXPECT_EQ(allocations, 0U);
+  EXPECT_EQ(deallocations, 0U);
+  EXPECT_EQ(data.output.nof_intents, candidates.size());
+  // A shorter next call must not consume stale tail entries from the workspace.
+  data.input.nof_candidates = 1;
+  EXPECT_EQ(run_scheduler_pipeline(data.input, data.output, config, *state), OCUDU_DAPP_OK_V1);
+  EXPECT_EQ(data.output.nof_intents, 1U);
+}
+
+TEST(reference_scheduler_algorithm, rejects_workspace_overflow_before_touching_candidates)
+{
+  fixture                    data;
+  scheduler_reference_state  state;
+  scheduler_reference_config config;
+  data.input.nof_candidates = scheduler_reference_state::maximum_candidates + 1;
+  EXPECT_EQ(run_scheduler_pipeline(data.input, data.output, config, state), OCUDU_DAPP_INVALID_INPUT_V1);
+  data.input.nof_candidates = 3;
+  data.input.cell_nof_prbs  = scheduler_reference_state::maximum_prbs + 1;
+  EXPECT_EQ(run_scheduler_pipeline(data.input, data.output, config, state), OCUDU_DAPP_INVALID_INPUT_V1);
+}
 
 TEST(reference_scheduler_algorithm, ranks_bounded_candidates_and_publishes_complete_intent)
 {

@@ -7,7 +7,6 @@
 #include <cmath>
 #include <cstddef>
 #include <limits>
-#include <vector>
 
 using namespace ocudu::dapp::reference;
 
@@ -196,8 +195,10 @@ ocudu_dapp_status_v1 ocudu::dapp::reference::run_scheduler_pipeline(const ocudu_
       (input.allowed_output_flags & ~OCUDU_DAPP_SCHEDULER_ALLOW_KNOWN_MASK_V1) != 0 ||
       ((input.allowed_output_flags & OCUDU_DAPP_SCHEDULER_ALLOW_AVOID_PRB_MASK_V1) != 0 &&
        (input.direction != OCUDU_DAPP_SCHEDULER_UL_V1 || input.interference_context_present == 0)) ||
-      input.nof_candidates == 0 || input.candidates == nullptr || input.candidate_generation == 0 ||
-      output.struct_size < output_minimum || output.abi_major != OCUDU_DAPP_ABI_MAJOR_V1 || output.intents == nullptr ||
+      input.nof_candidates == 0 || input.nof_candidates > scheduler_reference_state::maximum_candidates ||
+      input.cell_nof_prbs > scheduler_reference_state::maximum_prbs || input.candidates == nullptr ||
+      input.candidate_generation == 0 || output.struct_size < output_minimum ||
+      output.abi_major != OCUDU_DAPP_ABI_MAJOR_V1 || output.intents == nullptr ||
       output.intent_capacity < input.nof_candidates || !std::isfinite(config.backlog_weight) ||
       !std::isfinite(config.scheduling_request_bonus) || !std::isfinite(config.consecutive_winner_penalty) ||
       config.backlog_weight < 0.0 || config.scheduling_request_bonus < 0.0 || config.consecutive_winner_penalty < 0.0) {
@@ -242,11 +243,10 @@ ocudu_dapp_status_v1 ocudu::dapp::reference::run_scheduler_pipeline(const ocudu_
                            allowed(input, OCUDU_DAPP_SCHEDULER_ALLOW_LAYERS_V1, config.emit_only_allowed) &&
                            (input.allowed_output_flags & OCUDU_DAPP_SCHEDULER_ALLOW_LAYERS_V1) != 0;
 
-  // Working free mask for packing (stack for small cells; heap fallback).
-  std::vector<uint8_t> free_work;
-  const uint8_t*       interference_ptr = nullptr;
+  // Lane-local storage was allocated with the worker, never on evaluate.
+  auto&          free_work        = state.scratch.free;
+  const uint8_t* interference_ptr = nullptr;
   if (want_hard_pack) {
-    free_work.resize(input.cell_nof_prbs);
     const auto* src = reinterpret_cast<const uint8_t*>(input.free_vrb_mask.native_handle);
     std::copy_n(src, input.cell_nof_prbs, free_work.data());
   }
@@ -255,10 +255,14 @@ ocudu_dapp_status_v1 ocudu::dapp::reference::run_scheduler_pipeline(const ocudu_
   }
 
   // Per-candidate decided MCS for pack sizing.
-  std::vector<uint8_t> decided_mcs(input.nof_candidates, 0);
-  std::vector<uint8_t> decided_layers(input.nof_candidates, 1);
-  std::vector<double>  priorities(input.nof_candidates, 0.0);
-  std::vector<uint8_t> forbid(input.nof_candidates, 0);
+  auto& decided_mcs    = state.scratch.mcs;
+  auto& decided_layers = state.scratch.layers;
+  auto& priorities     = state.scratch.priorities;
+  auto& forbid         = state.scratch.forbid;
+  std::fill_n(decided_mcs.begin(), input.nof_candidates, 0);
+  std::fill_n(decided_layers.begin(), input.nof_candidates, 1);
+  std::fill_n(priorities.begin(), input.nof_candidates, 0.0);
+  std::fill_n(forbid.begin(), input.nof_candidates, 0);
 
   double   best_priority = -std::numeric_limits<double>::infinity();
   uint32_t best_ue       = 0;
@@ -395,29 +399,35 @@ ocudu_dapp_status_v1 ocudu::dapp::reference::run_scheduler_pipeline(const ocudu_
   }
 
   // Sort order for packing: indices by priority desc
-  std::vector<uint32_t> order(input.nof_candidates);
+  auto& order = state.scratch.order;
   for (uint32_t i = 0; i != input.nof_candidates; ++i) {
     order[i] = i;
   }
-  std::stable_sort(order.begin(), order.end(), [&](uint32_t a, uint32_t b) {
+  // Tie-break by original index to retain stable order without stable_sort's
+  // temporary heap buffer.
+  std::sort(order.begin(), order.begin() + input.nof_candidates, [&](uint32_t a, uint32_t b) {
     if (forbid[a] != forbid[b]) {
       return forbid[a] < forbid[b];
     }
-    return priorities[a] > priorities[b];
+    return priorities[a] == priorities[b] ? a < b : priorities[a] > priorities[b];
   });
 
   // ---- Stage: pack ----
-  std::vector<uint16_t> assign_start(input.nof_candidates, 0);
-  std::vector<uint16_t> assign_nof(input.nof_candidates, 0);
-  std::vector<uint16_t> min_prbs(input.nof_candidates, 0);
-  std::vector<uint16_t> max_prbs(input.nof_candidates, 0);
-  uint16_t              remaining = input.remaining_slice_prbs;
+  auto& assign_start = state.scratch.assign_start;
+  auto& assign_nof   = state.scratch.assign_nof;
+  auto& min_prbs     = state.scratch.min_prbs;
+  auto& max_prbs     = state.scratch.max_prbs;
+  std::fill_n(assign_start.begin(), input.nof_candidates, 0);
+  std::fill_n(assign_nof.begin(), input.nof_candidates, 0);
+  std::fill_n(min_prbs.begin(), input.nof_candidates, 0);
+  std::fill_n(max_prbs.begin(), input.nof_candidates, 0);
+  uint16_t remaining = input.remaining_slice_prbs;
   if (remaining == 0 && input.cell_nof_prbs != 0) {
     remaining = static_cast<uint16_t>(input.cell_nof_prbs);
   }
 
   if (config.pack != scheduler_pack_mode::off) {
-    for (uint32_t ord = 0; ord != order.size(); ++ord) {
+    for (uint32_t ord = 0; ord != input.nof_candidates; ++ord) {
       const uint32_t index     = order[ord];
       const auto&    candidate = input.candidates[index];
       if (forbid[index] != 0) {
@@ -452,7 +462,7 @@ ocudu_dapp_status_v1 ocudu::dapp::reference::run_scheduler_pipeline(const ocudu_
         } else if (config.forbid_on_pack_fail) {
           forbid[index] = 1;
         }
-      } else if (config.pack == scheduler_pack_mode::soft_prefer_clean && need > 0 && free_work.empty() &&
+      } else if (config.pack == scheduler_pack_mode::soft_prefer_clean && need > 0 && !want_hard_pack &&
                  input.cell_nof_prbs > 0) {
         // Soft preference without free mask: prefer low PRBs or clean interference band.
         if (interference_ptr != nullptr) {

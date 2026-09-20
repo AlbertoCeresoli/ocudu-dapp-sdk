@@ -4,6 +4,7 @@
 
 #include "ocudu/dapp/use_cases/v1/scheduler.h"
 #include "ocudu_dapp_sdk/reference_scheduler_olla.h"
+#include <array>
 #include <cstdint>
 
 namespace ocudu::dapp::reference {
@@ -94,6 +95,17 @@ struct scheduler_reference_config {
 /// serializes invocations on a lane, so no internal locking is needed; do not
 /// share one instance between lanes.
 struct scheduler_reference_state {
+  /// Fixed worker-owned workspace: evaluate never allocates, including sorting.
+  /// These are reference implementation limits, not a new public C ABI.
+  static constexpr uint32_t maximum_candidates = OCUDU_DAPP_SCHEDULER_MAX_CANDIDATES_V1;
+  static constexpr uint32_t maximum_prbs       = 275;
+  struct workspace {
+    std::array<uint8_t, maximum_prbs>        free{};
+    std::array<uint8_t, maximum_candidates>  mcs{}, layers{}, forbid{};
+    std::array<double, maximum_candidates>   priorities{};
+    std::array<uint32_t, maximum_candidates> order{};
+    std::array<uint16_t, maximum_candidates> assign_start{}, assign_nof{}, min_prbs{}, max_prbs{};
+  } scratch;
   /// Pipeline invocations observed so far.
   uint64_t invocations{};
   /// UE that won the previous slot (consecutive-winner penalty in backlog rank).
