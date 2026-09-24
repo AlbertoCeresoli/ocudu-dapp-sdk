@@ -259,6 +259,8 @@ def materialize(args: argparse.Namespace, root: Path, output: Path) -> None:
             copy_file(root / relative, output / relative)
         support_sources += " reference/common/class_c_config.cpp"
     if args.kind == "receiver":
+        copy_file(root / "include/ocudu_dapp_sdk/receiver_symbol_storage.h",
+                  output / "include/ocudu_dapp_sdk/receiver_symbol_storage.h")
         copy_file(root / "tools/make_receiver_cuda_model.cpp", output / "tools/make_receiver_cuda_model.cpp")
         model_tool = """add_executable(make_receiver_cuda_model tools/make_receiver_cuda_model.cpp)
 target_include_directories(make_receiver_cuda_model PRIVATE ${PROJECT_SOURCE_DIR}/include)
