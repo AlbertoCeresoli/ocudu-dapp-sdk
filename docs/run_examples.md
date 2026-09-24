@@ -684,6 +684,7 @@ any other program.
 | [`examples/e3_spectrum_sensing`](../examples/e3_spectrum_sensing/README.md) | `emitter_detector.py` — uplink-grid emitter detection from `classc.spectrum` |
 | [`examples/e3_isac_sensing`](../examples/e3_isac_sensing/README.md) | `srs_isac_monitor.py` — range-Doppler pipeline on the SRS channel response |
 | [`examples/e3_mcp_server`](../examples/e3_mcp_server/README.md) | `ocudu_mcp_server.py` — MCP server exposing the gNB to an AI assistant |
+| [`examples/e3_receiver_routing`](../examples/e3_receiver_routing/README.md) | `sinr_router.py` — routes each UE's PUSCH to one of two receivers (or the stock receiver) by uplink SINR through the gNB's per-UE route table |
 
 ### 6.1 Prerequisites
 
@@ -729,6 +730,9 @@ python3 e3_isac_sensing/srs_isac_monitor.py --cpi 64 --threshold-db 12
 
 # MCP server for an AI assistant (stdio; e.g. `claude mcp add ocudu -- …`)
 python3 e3_mcp_server/ocudu_mcp_server.py --host 127.0.0.1 --port 36423
+
+# Per-UE receiver routing by SINR (both instances active; see its README)
+python3 e3_receiver_routing/sinr_router.py --below <instance-A> --above conventional --threshold-db 12
 ```
 
 ### 6.4 Tests
@@ -736,7 +740,7 @@ python3 e3_mcp_server/ocudu_mcp_server.py --host 127.0.0.1 --port 36423
 Each directory has a `tests/` package runnable offline:
 
 ```bash
-cd $SDK_SRC/examples/e3_telemetry_python   # or e3_spectrum_sensing, e3_isac_sensing, e3_mcp_server
+cd $SDK_SRC/examples/e3_telemetry_python   # or e3_spectrum_sensing, e3_isac_sensing, e3_mcp_server, e3_receiver_routing
 python3 -m unittest discover -s tests -v
 ```
 

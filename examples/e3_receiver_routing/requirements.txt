@@ -1,0 +1,5 @@
+# SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+#
+# SINR router example dependencies (the ocudu_e3 client comes from the OCUDU tree).
+asn1tools>=0.166,<1
