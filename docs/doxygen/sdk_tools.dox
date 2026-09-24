@@ -19,6 +19,12 @@ null-configuration lifecycle, exercises concurrent workers and streams, and
 checks the declared shape/QAM/DM-RS matrix with poisoned-buffer canaries.
 Optional model arguments exercise receiver model generations.
 
+\section sdk_tools_srs_replay SRS replay
+
+\c ocudu-dapp-srs-replay runs the reference SRS channel estimator on an SRS
+vector file (golden set or live-capture export) and compares it with the
+recorded answer; \c --check fails outside the golden bounds. See \c docs/tools.md.
+
 \section sdk_tools_model Model helper
 
 \c make_receiver_cuda_model emits the reference receiver model artifact for

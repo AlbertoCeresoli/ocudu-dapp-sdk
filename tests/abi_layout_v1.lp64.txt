@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: Copyright (C) 2026 DeepSig Inc.
 # SPDX-License-Identifier: BSD-3-Clause-Clear
-# Public ABI v1 layout fingerprint (LP64), including optional receiver symbols.
+# Public ABI v1 layout fingerprint (LP64), including optional receiver symbols and the SRS channel estimator.
 # The receiver metrics prefix remains 336 bytes; existing field offsets are unchanged.
 value OCUDU_DAPP_ABI_MAJOR_V1 1
 value OCUDU_DAPP_ABI_MINOR_V1 0
@@ -167,3 +167,45 @@ field ocudu_dapp_receiver_completion_api_v1.inspect 16
 field ocudu_dapp_receiver_completion_api_v1.release 24
 field ocudu_dapp_receiver_completion_api_v1.retire 32
 field ocudu_dapp_receiver_completion_api_v1.reserved 40
+value OCUDU_DAPP_INTERFACE_SRS_CHANNEL_ESTIMATOR_V1 65543
+value OCUDU_DAPP_METADATA_SRS_CHANNEL_ESTIMATOR_V1 66305
+value OCUDU_DAPP_SRS_PROFILE_V1 66306
+value OCUDU_DAPP_SRS_MEASUREMENT_COUNT_V1 8
+type ocudu_dapp_srs_channel_estimator_metadata_v1 152 8
+type ocudu_dapp_srs_profile_v1 64 8
+type ocudu_dapp_srs_channel_estimator_input_v1 736 8
+type ocudu_dapp_srs_channel_estimator_output_v1 624 8
+type ocudu_dapp_srs_channel_estimator_interface_v1 144 8
+field ocudu_dapp_srs_channel_estimator_metadata_v1.nof_rx_ports 8
+field ocudu_dapp_srs_channel_estimator_metadata_v1.nof_tx_ports 12
+field ocudu_dapp_srs_channel_estimator_metadata_v1.start_symbol 16
+field ocudu_dapp_srs_channel_estimator_metadata_v1.nof_symbols 20
+field ocudu_dapp_srs_channel_estimator_metadata_v1.sequence_length 24
+field ocudu_dapp_srs_channel_estimator_metadata_v1.comb_size 28
+field ocudu_dapp_srs_channel_estimator_metadata_v1.nof_pilot_sets 32
+field ocudu_dapp_srs_channel_estimator_metadata_v1.n_cs_max 36
+field ocudu_dapp_srs_channel_estimator_metadata_v1.pilot_set 40
+field ocudu_dapp_srs_channel_estimator_metadata_v1.cyclic_shift 56
+field ocudu_dapp_srs_channel_estimator_metadata_v1.first_subcarrier 72
+field ocudu_dapp_srs_channel_estimator_metadata_v1.sequence_group 80
+field ocudu_dapp_srs_channel_estimator_metadata_v1.sequence_number 84
+field ocudu_dapp_srs_channel_estimator_metadata_v1.subcarrier_spacing_hz 88
+field ocudu_dapp_srs_channel_estimator_metadata_v1.numerology 92
+field ocudu_dapp_srs_channel_estimator_metadata_v1.grid_nof_subcarriers 96
+field ocudu_dapp_srs_channel_estimator_metadata_v1.flags 100
+field ocudu_dapp_srs_channel_estimator_metadata_v1.rnti 104
+field ocudu_dapp_srs_channel_estimator_metadata_v1.max_time_alignment_s 112
+field ocudu_dapp_srs_channel_estimator_metadata_v1.reserved 120
+field ocudu_dapp_srs_profile_v1.max_nof_rx_ports 12
+field ocudu_dapp_srs_profile_v1.max_nof_tx_ports 16
+field ocudu_dapp_srs_profile_v1.max_sequence_length 20
+field ocudu_dapp_srs_profile_v1.comb_mask 24
+field ocudu_dapp_srs_profile_v1.flags 28
+field ocudu_dapp_srs_profile_v1.reserved 32
+field ocudu_dapp_srs_channel_estimator_input_v1.rx_symbols 112
+field ocudu_dapp_srs_channel_estimator_input_v1.reference_symbols 408
+field ocudu_dapp_srs_channel_estimator_input_v1.srs 704
+field ocudu_dapp_srs_channel_estimator_output_v1.channel_matrix 0
+field ocudu_dapp_srs_channel_estimator_output_v1.measurements 296
+field ocudu_dapp_srs_channel_estimator_output_v1.reserved 592
+field ocudu_dapp_srs_channel_estimator_interface_v1.invoke 72

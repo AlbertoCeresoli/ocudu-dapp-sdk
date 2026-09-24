@@ -137,6 +137,19 @@ Checks lifecycle, concurrent workers/streams, shape matrix, QAM×DM-RS, canaries
 metrics, and optional model generations. JSON on stdout — preserve with the
 manifest. Not a substitute for live DU or production tail qualification.
 
+### `ocudu-dapp-srs-replay`
+
+Runs the CPU reference SRS channel estimator on every occasion of an SRS vector
+file and compares its channel matrix, EPRE, RSRP, noise variance and time
+alignment with the answer recorded in the file (values recorded as NaN are
+skipped). The input is the golden set (`tests/data/srs_channel_estimator_vectors.bin`)
+or occasions exported from a live capture (`examples/e3_srs_dataset`).
+
+```bash
+ocudu-dapp-srs-replay live.bin                  # per-occasion lines and a summary
+ocudu-dapp-srs-replay golden.bin --check --quiet   # exit 1 outside the golden bounds
+```
+
 ### `make_receiver_cuda_model` (build tree)
 
 Emits the **reference** pointer-free receiver model artifact for demos and

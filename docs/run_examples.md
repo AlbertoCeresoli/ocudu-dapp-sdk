@@ -167,6 +167,8 @@ Authoring depth: [class_a_cuda_authoring.md](class_a_cuda_authoring.md).
 | `ref_channel_estimator_cuda` | `8f0d0001-4f9c-4e31-8c00-000000000203` | `0x00010003` | in-process / cuda | `certify … 0x00010003` |
 | `ref_equalizer_cuda` | `8f0d0001-4f9c-4e31-8c00-000000000204` | `0x00010004` | in-process / cuda | `certify … 0x00010004` |
 | `ref_receiver_cuda` | `8f0d0001-4f9c-4e31-8c00-000000000205` | `0x00010005` | in-process / cuda | `certify … 0x00010005` |
+| `ref_srs_channel_estimator_cpu` | `8f0d0001-4f9c-4e31-8c00-000000000007` | `0x00010007` | in-process / cpu | module contract, `ocudu-dapp-srs-replay --check` |
+| `ref_srs_channel_estimator_cuda` | `8f0d0001-4f9c-4e31-8c00-000000000207` | `0x00010007` | in-process / cuda | `reference_srs_channel_estimator_cuda_test` |
 
 ### 1.1 Offline (no DU) — certify before catalog
 
@@ -262,6 +264,12 @@ done
 | `ref_equalizer_cpu` | `8f0d0001-4f9c-4e31-8c00-000000000004` | `--placement in-process --backend cpu` |
 | `ref_channel_estimator_cpu` | `8f0d0001-4f9c-4e31-8c00-000000000003` | `--placement in-process --backend cpu` |
 | `ref_receiver_cpu` | `8f0d0001-4f9c-4e31-8c00-000000000005` | `--placement in-process --backend cpu` |
+| `ref_srs_channel_estimator_cuda` | `8f0d0001-4f9c-4e31-8c00-000000000207` | `--placement in-process --backend cuda` |
+| `ref_srs_channel_estimator_cpu` | `8f0d0001-4f9c-4e31-8c00-000000000007` | `--placement in-process --backend cpu` |
+
+The SRS channel estimator occupies its own hook, next to any PUSCH Class-A
+package: on an accelerated gNB load the CUDA package, on a host-L1 gNB the CPU
+one. Its `dapp.invoke.count` counts SRS occasions.
 
 Stage the matching `.so` + manifest + SBOM; put that manifest in
 `package_manifests`; use the row’s UUID and load flags.
@@ -685,6 +693,7 @@ any other program.
 | [`examples/e3_isac_sensing`](../examples/e3_isac_sensing/README.md) | `srs_isac_monitor.py` — range-Doppler pipeline on the SRS channel response |
 | [`examples/e3_mcp_server`](../examples/e3_mcp_server/README.md) | `ocudu_mcp_server.py` — MCP server exposing the gNB to an AI assistant |
 | [`examples/e3_receiver_routing`](../examples/e3_receiver_routing/README.md) | `sinr_router.py` — routes each UE's PUSCH to one of two receivers (or the stock receiver) by uplink SINR through the gNB's per-UE route table |
+| [`examples/e3_srs_dataset`](../examples/e3_srs_dataset/README.md) | `capture_srs_dataset.py` — SRS channel-estimation datasets (the SRS estimator dApp input plus the gNB's answer) from a live cell; `export_srs_vectors.py` + `ocudu-dapp-srs-replay` replay them through the reference estimator |
 
 ### 6.1 Prerequisites
 
@@ -834,6 +843,7 @@ timeout, catalog path not matching staged files.
 | `ref_channel_estimator_cpu` | `8f0d0001-4f9c-4e31-8c00-000000000003` | in-process | cpu |
 | `ref_equalizer_cpu` | `8f0d0001-4f9c-4e31-8c00-000000000004` | in-process | cpu |
 | `ref_receiver_cpu` | `8f0d0001-4f9c-4e31-8c00-000000000005` | in-process | cpu |
+| `ref_srs_channel_estimator_cpu` | `8f0d0001-4f9c-4e31-8c00-000000000007` | in-process | cpu |
 | `ref_scheduler_cpu` | `8f0d0001-4f9c-4e31-8c00-000000000006` | in-process | cpu |
 | `ref_spectrum_cpu` | `8f0d0001-4f9c-4e31-8c00-000000000001` | in-process | cpu |
 | `ref_srs_isac_cpu` | `8f0d0001-4f9c-4e31-8c00-000000000002` | in-process | cpu |
@@ -843,6 +853,7 @@ timeout, catalog path not matching staged files.
 | `ref_channel_estimator_cuda` | `8f0d0001-4f9c-4e31-8c00-000000000203` | in-process | cuda |
 | `ref_equalizer_cuda` | `8f0d0001-4f9c-4e31-8c00-000000000204` | in-process | cuda |
 | `ref_receiver_cuda` | `8f0d0001-4f9c-4e31-8c00-000000000205` | in-process | cuda |
+| `ref_srs_channel_estimator_cuda` | `8f0d0001-4f9c-4e31-8c00-000000000207` | in-process | cuda |
 | `ref_spectrum_cuda` | `8f0d0001-4f9c-4e31-8c00-000000000201` | in-process | cuda |
 | `ref_srs_isac_cuda` | `8f0d0001-4f9c-4e31-8c00-000000000202` | in-process | cuda |
 | `ref_spectrumd_cuda` | `8f0d0001-4f9c-4e31-8c00-000000000301` | out-of-process | cuda |

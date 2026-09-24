@@ -21,6 +21,20 @@ backend, offline checks): **[run_examples.md](run_examples.md)**.
 | `ref_channel_estimator_cuda` | `0x00010003` | CUDA | in-process | CE only (device tensors) |
 | `ref_equalizer_cuda` | `0x00010004` | CUDA | in-process | CE + EQ |
 | `ref_receiver_cuda` | `0x00010005` | CUDA | in-process | Full RX + model-management demo |
+| `ref_srs_channel_estimator_cpu` | `0x00010007` | CPU | in-process | SRS channel estimator (the gNB's host estimator) |
+| `ref_srs_channel_estimator_cuda` | `0x00010007` | CUDA | in-process | SRS channel estimator on device tensors |
+
+**SRS channel estimator:** both packages reproduce the gNB's host SRS estimator
+(`srs_estimator_generic_impl`): per-port least squares averaged over the SRS
+symbols, DFT time alignment with curve-fit refinement, phase-ramp removal,
+wideband coefficients scaled by the inverse noise standard deviation, and the
+host's EPRE, RSRP and noise variance. Profile: up to 8 rx and 4 tx ports
+(interleaved pilots included), sequences up to 1632 pilots, combs 2 and 4. The
+CUDA package evaluates the delay profile only at the searched bins (no cuFFT)
+and warms its kernels up at worker creation. `reference_srs_channel_estimator*_test`
+check both against the golden vectors OCUDU generates from its host estimator
+(`tests/data/`), to single-precision rounding. Host contract:
+OCUDU `docs/dapp/srs_channel_estimator.md`.
 
 **v1 admitted envelope (references):** ≤2 layers, all QAM, DM-RS type 1/2,
 DC-capable, no transform precoding. Deterministic integration algorithms, not

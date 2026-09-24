@@ -10,9 +10,11 @@
 #include "ocudu/dapp/use_cases/v1/receiver.h"
 #include "ocudu/dapp/use_cases/v1/scheduler.h"
 #include "ocudu/dapp/use_cases/v1/spectrum.h"
+#include "ocudu/dapp/use_cases/v1/srs_channel_estimator.h"
 #include "ocudu/dapp/use_cases/v1/srs_isac.h"
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <dlfcn.h>
@@ -235,6 +237,54 @@ ocudu_dapp_status_v1 invoke(const ocudu_dapp_interface_descriptor_v1& descriptor
       return static_cast<const ocudu_dapp_channel_estimator_interface_v1*>(descriptor.interface_vtable)
           ->invoke(worker, &input, &output);
     }
+    case OCUDU_DAPP_INTERFACE_SRS_CHANNEL_ESTIMATOR_V1: {
+      // One port pair, six comb-4 pilots on a flat unit channel.
+      std::array<complex32, 6>                               pilots{{{1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 0}, {0, 1}}};
+      std::array<complex32, 1>                               channel{};
+      std::array<float, OCUDU_DAPP_SRS_MEASUREMENT_COUNT_V1> measurements{};
+      ocudu_dapp_srs_channel_estimator_metadata_v1           metadata{};
+      metadata.struct_size           = sizeof(metadata);
+      metadata.abi_major             = OCUDU_DAPP_ABI_MAJOR_V1;
+      metadata.abi_minor             = OCUDU_DAPP_ABI_MINOR_V1;
+      metadata.nof_rx_ports          = 1;
+      metadata.nof_tx_ports          = 1;
+      metadata.start_symbol          = 13;
+      metadata.nof_symbols           = 1;
+      metadata.sequence_length       = pilots.size();
+      metadata.comb_size             = 4;
+      metadata.nof_pilot_sets        = 1;
+      metadata.n_cs_max              = 12;
+      metadata.subcarrier_spacing_hz = 30'000;
+      metadata.numerology            = 1;
+      metadata.grid_nof_subcarriers  = 24;
+      metadata.max_time_alignment_s  = 1.0 / (12.0 * 30'000.0 * 4.0);
+      ocudu_dapp_srs_channel_estimator_input_v1  input{};
+      ocudu_dapp_srs_channel_estimator_output_v1 output{};
+      input.rx_symbols                  = make_tensor(pilots.data(), OCUDU_DAPP_ELEMENT_CF32_V1, sizeof(complex32),
+                                                      OCUDU_DAPP_ACCESS_READ_V1, {1, 1, 1, pilots.size()});
+      input.rx_symbols.layout_id        = OCUDU_DAPP_LAYOUT_SRS_RX_SET_PORT_SYMBOL_PILOT_CF32_V1;
+      input.reference_symbols           = make_tensor(pilots.data(), OCUDU_DAPP_ELEMENT_CF32_V1, sizeof(complex32),
+                                                      OCUDU_DAPP_ACCESS_READ_V1, {1, pilots.size()});
+      input.reference_symbols.layout_id = OCUDU_DAPP_LAYOUT_SRS_REFERENCE_TX_PILOT_CF32_V1;
+      input.srs                         = typed(OCUDU_DAPP_METADATA_SRS_CHANNEL_ESTIMATOR_V1, metadata);
+      output.channel_matrix             = make_tensor(channel.data(), OCUDU_DAPP_ELEMENT_CF32_V1, sizeof(complex32),
+                                                      OCUDU_DAPP_ACCESS_WRITE_V1, {1, 1});
+      output.channel_matrix.layout_id   = OCUDU_DAPP_LAYOUT_SRS_CHANNEL_MATRIX_RX_TX_CF32_V1;
+      output.measurements               = make_tensor(measurements.data(), OCUDU_DAPP_ELEMENT_F32_V1, sizeof(float),
+                                                      OCUDU_DAPP_ACCESS_WRITE_V1, {measurements.size()});
+      output.measurements.layout_id     = OCUDU_DAPP_LAYOUT_SRS_MEASUREMENTS_F32_V1;
+      for (auto* tensor : {&input.rx_symbols, &input.reference_symbols, &output.channel_matrix, &output.measurements}) {
+        tensor->layout_version = 1;
+      }
+      const auto status = static_cast<const ocudu_dapp_srs_channel_estimator_interface_v1*>(descriptor.interface_vtable)
+                              ->invoke(worker, &input, &output);
+      // Noiseless unit channel: the coefficient is capped at 40 dB SNR, so it reads 100.
+      if (status == OCUDU_DAPP_OK_V1 &&
+          (std::abs(channel[0].real - 100.0F) > 1e-2F || std::abs(channel[0].imag) > 1e-2F)) {
+        return OCUDU_DAPP_INVALID_OUTPUT_V1;
+      }
+      return status;
+    }
     case OCUDU_DAPP_INTERFACE_EQUALIZER_V1: {
       ocudu_dapp_equalizer_input_v1  input{};
       ocudu_dapp_equalizer_output_v1 output{};
@@ -414,7 +464,15 @@ int main(int argc, char** argv)
   const bool resident_accelerator =
       module.interfaces[0].dapp_class == OCUDU_DAPP_CLASS_A_INLINE_V1 &&
       (module.interfaces[0].capability_bits & OCUDU_DAPP_PUSCH_CAP_RESIDENT_ACCELERATOR_V1) != 0;
-  if (module.interfaces[0].dapp_class == OCUDU_DAPP_CLASS_A_INLINE_V1) {
+  if (module.interfaces[0].interface_id == OCUDU_DAPP_INTERFACE_SRS_CHANNEL_ESTIMATOR_V1) {
+    const auto* profile = static_cast<const ocudu_dapp_srs_profile_v1*>(module.interfaces[0].use_case_profile);
+    ok = require(profile != nullptr && profile->struct_size >= offsetof(ocudu_dapp_srs_profile_v1, reserved) &&
+                     profile->profile_id == OCUDU_DAPP_SRS_PROFILE_V1 && profile->max_nof_rx_ports == 8 &&
+                     profile->max_nof_tx_ports == 4 && profile->max_sequence_length == 1632 &&
+                     profile->comb_mask == (OCUDU_DAPP_SRS_COMB_2_V1 | OCUDU_DAPP_SRS_COMB_4_V1) && profile->flags == 0,
+                 "invalid SRS channel-estimator admission profile") &&
+         ok;
+  } else if (module.interfaces[0].dapp_class == OCUDU_DAPP_CLASS_A_INLINE_V1) {
     const auto* profile = static_cast<const ocudu_dapp_pusch_profile_v1*>(module.interfaces[0].use_case_profile);
     ok = require(profile != nullptr && profile->struct_size >= offsetof(ocudu_dapp_pusch_profile_v1, reserved) &&
                      profile->profile_id == OCUDU_DAPP_PUSCH_PROFILE_V1 && profile->max_nof_prb == 275 &&

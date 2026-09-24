@@ -131,6 +131,15 @@ target_include_directories(ocudu_reference_phy_algorithms PUBLIC
   $<INSTALL_INTERFACE:${OCUDU_DAPP_TOOLKIT_INCLUDE_INSTALL}>)
 target_link_libraries(ocudu_reference_phy_algorithms PUBLIC OCUDU::DAppSDK)
 
+add_library(ocudu_reference_srs_channel_estimator STATIC reference/common/reference_srs_channel_estimator.cpp)
+set_target_properties(ocudu_reference_srs_channel_estimator PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(ocudu_reference_srs_channel_estimator PROPERTIES EXPORT_NAME reference_srs_channel_estimator)
+add_library(OCUDUDapp::reference_srs_channel_estimator ALIAS ocudu_reference_srs_channel_estimator)
+target_include_directories(ocudu_reference_srs_channel_estimator PUBLIC
+  $<BUILD_INTERFACE:${OCUDU_DAPP_TOOLKIT_INCLUDE_BUILD}>
+  $<INSTALL_INTERFACE:${OCUDU_DAPP_TOOLKIT_INCLUDE_INSTALL}>)
+target_link_libraries(ocudu_reference_srs_channel_estimator PUBLIC OCUDU::DAppSDK)
+
 add_library(ocudu_reference_scheduler_algorithm STATIC
   reference/common/reference_scheduler_pipeline.cpp
   reference/common/reference_scheduler_tables.cpp
@@ -208,6 +217,11 @@ add_reference_dapp(ref_receiver_cpu reference/receiver/module.cpp 0x00010005 1 1
 target_link_libraries(ref_channel_estimator_cpu PRIVATE ocudu_reference_phy_algorithms)
 target_link_libraries(ref_equalizer_cpu PRIVATE ocudu_reference_phy_algorithms)
 target_link_libraries(ref_receiver_cpu PRIVATE ocudu_reference_phy_algorithms)
+add_reference_dapp(ref_srs_channel_estimator_cpu reference/srs_channel_estimator/module.cpp 0x00010007 1 1)
+target_link_libraries(ref_srs_channel_estimator_cpu PRIVATE ocudu_reference_srs_channel_estimator)
+# Replays SRS channel-estimator vectors (golden set or live-capture export) through the reference estimator.
+add_executable(ocudu-dapp-srs-replay tools/srs_replay.cpp)
+target_link_libraries(ocudu-dapp-srs-replay PRIVATE ocudu_reference_srs_channel_estimator)
 add_reference_dapp(ref_scheduler_cpu reference/scheduler/module.cpp 0x00010006 2 1)
 target_link_libraries(ref_scheduler_cpu PRIVATE ocudu_reference_scheduler_algorithm)
 
@@ -250,6 +264,12 @@ if(OCUDU_DAPP_BUILD_CUDA_EXAMPLES)
     $<INSTALL_INTERFACE:${OCUDU_DAPP_TOOLKIT_INCLUDE_INSTALL}>)
   target_link_libraries(ref_receiver_cuda_reference_api PUBLIC ref_receiver_cuda_algorithm)
 
+  add_reference_cuda_algorithm(ref_srs_channel_estimator_cuda_algorithm reference/srs_channel_estimator_cuda/algorithm.cu)
+  target_link_libraries(ref_srs_channel_estimator_cuda_algorithm PUBLIC ocudu_reference_srs_channel_estimator)
+  set_target_properties(ref_srs_channel_estimator_cuda_algorithm PROPERTIES
+    EXPORT_NAME ref_srs_channel_estimator_cuda_algorithm)
+  add_library(OCUDUDapp::ref_srs_channel_estimator_cuda_algorithm ALIAS ref_srs_channel_estimator_cuda_algorithm)
+
   add_reference_cuda_algorithm(ref_spectrum_cuda_algorithm reference/spectrum_cuda/algorithm.cu)
   add_reference_cuda_algorithm(ref_srs_isac_cuda_algorithm reference/srs_isac_cuda/algorithm.cu)
   set_target_properties(ref_spectrum_cuda_algorithm PROPERTIES EXPORT_NAME ref_spectrum_cuda_algorithm)
@@ -284,6 +304,10 @@ if(OCUDU_DAPP_BUILD_CUDA_EXAMPLES)
   add_reference_dapp(ref_receiver_cuda
     "reference/receiver_cuda/module.cpp;reference/receiver_cuda/module_support.cpp" 0x00010005 1 1)
   target_link_libraries(ref_channel_estimator_cuda PRIVATE ref_channel_estimator_cuda_algorithm)
+  add_reference_dapp(ref_srs_channel_estimator_cuda
+    "reference/srs_channel_estimator_cuda/module.cpp;reference/srs_channel_estimator_cuda/module_support.cpp"
+    0x00010007 1 1)
+  target_link_libraries(ref_srs_channel_estimator_cuda PRIVATE ref_srs_channel_estimator_cuda_algorithm)
   target_link_libraries(ref_equalizer_cuda PRIVATE ref_equalizer_cuda_reference_api)
   target_link_libraries(ref_receiver_cuda PRIVATE ref_receiver_cuda_reference_api)
 
@@ -472,6 +496,8 @@ add_reference_manifest(ref_equalizer_cpu 8f0d0001-4f9c-4e31-8c00-000000000004
   org.ocudu.reference.equalizer.cpu A 0x00010004 in_process in_process 0 cpu)
 add_reference_manifest(ref_receiver_cpu 8f0d0001-4f9c-4e31-8c00-000000000005
   org.ocudu.reference.receiver.cpu A 0x00010005 in_process in_process 0 cpu)
+add_reference_manifest(ref_srs_channel_estimator_cpu 8f0d0001-4f9c-4e31-8c00-000000000007
+  org.ocudu.reference.srs-channel-estimator.cpu A 0x00010007 in_process in_process 0 cpu)
 add_reference_manifest(ref_scheduler_cpu 8f0d0001-4f9c-4e31-8c00-000000000006
   org.ocudu.reference.scheduler.cpu B 0x00010006 in_process in_process 0 cpu)
 if(OCUDU_DAPP_REF_EXTRAS AND BUILD_TESTING)
@@ -536,6 +562,8 @@ if(OCUDU_DAPP_BUILD_CUDA_EXAMPLES)
     org.ocudu.reference.equalizer.cuda A 0x00010004 in_process in_process 1 cuda)
   add_reference_manifest(ref_receiver_cuda 8f0d0001-4f9c-4e31-8c00-000000000205
     org.ocudu.reference.receiver.cuda A 0x00010005 in_process in_process 1 cuda)
+  add_reference_manifest(ref_srs_channel_estimator_cuda 8f0d0001-4f9c-4e31-8c00-000000000207
+    org.ocudu.reference.srs-channel-estimator.cuda A 0x00010007 in_process in_process 1 cuda)
   if(OCUDU_DAPP_REF_EXTRAS)
     add_reference_manifest(ref_spectrumd_cuda 8f0d0001-4f9c-4e31-8c00-000000000301
       org.ocudu.reference.spectrum.process.cuda C 0x00010001 out_of_process out_of_process 7 cuda)
@@ -603,6 +631,16 @@ if(BUILD_TESTING)
     COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_release_docs.py)
   add_executable(class_c_algorithms_test tests/class_c_algorithms_test.cpp)
   target_link_libraries(class_c_algorithms_test PRIVATE ocudu_reference_class_c_algorithms GTest::gtest_main)
+  # Parity with the gNB's host SRS estimator: golden vectors from OCUDU srs_dapp_channel_estimator_vectors.
+  set(OCUDU_DAPP_SRS_VECTORS ${PROJECT_SOURCE_DIR}/tests/data/srs_channel_estimator_vectors.bin)
+  add_executable(reference_srs_channel_estimator_test tests/reference_srs_channel_estimator_test.cpp)
+  target_link_libraries(reference_srs_channel_estimator_test PRIVATE
+    ocudu_reference_srs_channel_estimator GTest::gtest_main)
+  target_compile_definitions(reference_srs_channel_estimator_test PRIVATE
+    OCUDU_DAPP_SRS_VECTORS="${OCUDU_DAPP_SRS_VECTORS}")
+  gtest_discover_tests(reference_srs_channel_estimator_test)
+  add_test(NAME tools.srs_replay_golden
+    COMMAND ocudu-dapp-srs-replay ${OCUDU_DAPP_SRS_VECTORS} --check --quiet)
   add_executable(reference_phy_algorithms_test tests/reference_phy_algorithms_test.cpp)
   target_link_libraries(reference_phy_algorithms_test PRIVATE ocudu_reference_phy_algorithms GTest::gtest_main)
   if(OCUDU_DAPP_BUILD_CUDA_EXAMPLES)
@@ -616,6 +654,16 @@ if(BUILD_TESTING)
       CUDA_SEPARABLE_COMPILATION ON
       CUDA_RESOLVE_DEVICE_SYMBOLS ON)
     gtest_discover_tests(reference_phy_algorithms_cuda_test)
+
+    add_executable(reference_srs_channel_estimator_cuda_test tests/reference_srs_channel_estimator_cuda_test.cu)
+    target_link_libraries(reference_srs_channel_estimator_cuda_test PRIVATE
+      ref_srs_channel_estimator_cuda_algorithm GTest::gtest_main CUDA::cudart)
+    target_compile_definitions(reference_srs_channel_estimator_cuda_test PRIVATE
+      OCUDU_DAPP_SRS_VECTORS="${OCUDU_DAPP_SRS_VECTORS}")
+    set_target_properties(reference_srs_channel_estimator_cuda_test PROPERTIES
+      CUDA_SEPARABLE_COMPILATION ON
+      CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+    gtest_discover_tests(reference_srs_channel_estimator_cuda_test)
 
     add_executable(spectrum_cuda_module_test tests/spectrum_cuda_module_test.cpp)
     target_link_libraries(spectrum_cuda_module_test PRIVATE
@@ -821,6 +869,7 @@ if(OCUDU_DAPP_BUILD_PYTHON_CLASS_C)
 endif()
 add_subdirectory(examples/e3_telemetry_python)
 add_subdirectory(examples/e3_receiver_routing)
+add_subdirectory(examples/e3_srs_dataset)
 add_subdirectory(examples/e3_spectrum_sensing)
 add_subdirectory(examples/e3_isac_sensing)
 add_subdirectory(examples/e3_mcp_server)
@@ -864,6 +913,7 @@ if(OCUDU_DAPP_INSTALL_VENDOR_TOOLKIT)
   install(DIRECTORY ${PROJECT_SOURCE_DIR}/tools/l1_validation/
     DESTINATION ${CMAKE_INSTALL_DOCDIR}/tools/l1_validation
     FILES_MATCHING PATTERN "*.md")
+  install(TARGETS ocudu-dapp-srs-replay RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
   if(TARGET certify_class_a_cuda)
     install(TARGETS certify_class_a_cuda l1_validation_suite
       RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -876,6 +926,7 @@ if(OCUDU_DAPP_INSTALL_VENDOR_TOOLKIT)
       ocudu_reference_support
       ocudu_reference_class_c_algorithms
       ocudu_reference_phy_algorithms
+      ocudu_reference_srs_channel_estimator
       ocudu_reference_scheduler_algorithm
       ocudu_process_client
       ocudu_reference_class_c_input
@@ -932,6 +983,7 @@ if(OCUDU_DAPP_INSTALL_VENDOR_TOOLKIT)
         ref_receiver_cuda_algorithm
         ref_spectrum_cuda_algorithm
         ref_srs_isac_cuda_algorithm
+        ref_srs_channel_estimator_cuda_algorithm
         ocudu_process_cuda_client
       EXPORT OCUDUDappTargets
       ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

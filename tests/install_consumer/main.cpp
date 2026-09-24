@@ -8,6 +8,7 @@
 #include "ocudu_dapp_sdk/process_client.h"
 #include "ocudu_dapp_sdk/reference_phy_algorithms.h"
 #include "ocudu_dapp_sdk/reference_scheduler_pipeline.h"
+#include "ocudu_dapp_sdk/reference_srs_channel_estimator.h"
 
 static_assert(OCUDU_DAPP_ABI_MAJOR_V1 == 1u);
 
@@ -17,5 +18,9 @@ int main()
   ocudu::dapp::reference::class_c_input              input{};
   ocudu::dapp::reference::scheduler_reference_config scheduler{};
   ocudu::dapp::sdk::process_interface_expectation    process{};
-  return tensor.rank == 0 && input.source_sequence == 0 && !scheduler.emit_layers && process.interface_id == 0 ? 0 : 1;
+  ocudu::dapp::reference::srs_invocation             srs{};
+  return tensor.rank == 0 && input.source_sequence == 0 && !scheduler.emit_layers && process.interface_id == 0 &&
+                 srs.srs == nullptr
+             ? 0
+             : 1;
 }

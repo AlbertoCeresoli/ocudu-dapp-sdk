@@ -20,6 +20,7 @@
 #include "ocudu/dapp/abi/v1/module.h"
 #include "ocudu/dapp/use_cases/v1/common.h"
 #include "ocudu/dapp/use_cases/v1/pusch_metadata.h"
+#include "ocudu/dapp/use_cases/v1/srs_channel_estimator.h"
 #include <atomic>
 #include <memory>
 #include <mutex>
@@ -145,12 +146,24 @@ ocudu_dapp_status_v1 guard_algorithm_call(Callable&& callable) noexcept
 /// callback dispatch (maximum layers plus completeness/feature flags).
 ocudu_dapp_pusch_profile_v1 make_pusch_profile(uint32_t max_layers, uint32_t flags = 0) noexcept;
 
+/// Builds the SRS channel-estimator admission profile: every occasion the host produces (8 rx ports, 4 tx ports,
+/// sequences up to 1632 pilots, combs 2 and 4) unless narrowed.
+ocudu_dapp_srs_profile_v1 make_srs_profile(uint32_t max_rx_ports        = OCUDU_DAPP_SRS_MAX_RX_PORTS_V1,
+                                           uint32_t max_tx_ports        = OCUDU_DAPP_SRS_MAX_TX_PORTS_V1,
+                                           uint32_t max_sequence_length = OCUDU_DAPP_SRS_MAX_SEQUENCE_LENGTH_V1,
+                                           uint32_t comb_mask           = OCUDU_DAPP_SRS_COMB_2_V1 |
+                                                                OCUDU_DAPP_SRS_COMB_4_V1) noexcept;
+
 /// Assembles one interface descriptor: identity, class, placement, threading
 /// contract, the per-interface vtable, declared capabilities, and an optional
 /// PUSCH admission profile.
 ocudu_dapp_interface_descriptor_v1 make_interface(uint32_t interface_id, uint32_t dapp_class, uint32_t placement_mask,
                                                   uint32_t threading, const void* vtable, uint64_t capabilities = 0,
                                                   const ocudu_dapp_pusch_profile_v1* profile = nullptr) noexcept;
+/// Interface descriptor carrying the SRS channel-estimator profile.
+ocudu_dapp_interface_descriptor_v1 make_interface(uint32_t interface_id, uint32_t dapp_class, uint32_t placement_mask,
+                                                  uint32_t threading, const void* vtable, uint64_t capabilities,
+                                                  const ocudu_dapp_srs_profile_v1* profile) noexcept;
 /// Fills a module descriptor with the reference lifecycle callbacks, the
 /// supplied name/interface, and ABI version stamps. The caller may override
 /// individual callbacks afterwards (stateful_module_context::populate does

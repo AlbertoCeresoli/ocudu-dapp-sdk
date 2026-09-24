@@ -17,6 +17,7 @@ target_link_libraries(ocudu_dapp_cpu_consumer PRIVATE
   OCUDUDapp::reference_support
   OCUDUDapp::reference_class_c_algorithms
   OCUDUDapp::reference_phy_algorithms
+  OCUDUDapp::reference_srs_channel_estimator
   OCUDUDapp::reference_scheduler_algorithm
   OCUDUDapp::process_client
   OCUDUDapp::reference_class_c_input)
@@ -35,5 +36,6 @@ if(OCUDUDapp_CUDA_AVAILABLE)
     OCUDUDapp::ref_receiver_cuda_algorithm
     OCUDUDapp::ref_spectrum_cuda_algorithm
     OCUDUDapp::ref_srs_isac_cuda_algorithm
+    OCUDUDapp::ref_srs_channel_estimator_cuda_algorithm
     OCUDUDapp::process_cuda_client)
 endif()

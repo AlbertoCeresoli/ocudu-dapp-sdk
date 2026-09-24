@@ -14,6 +14,12 @@ receiver (\c 0x00010005): \c ref_channel_estimator_*, \c ref_equalizer_*,
 \c ref_receiver_*. CUDA variants require resident device tensors and inherit
 \c invocation.execution_stream.
 
+SRS channel estimator (\c 0x00010007): \c ref_srs_channel_estimator_cpu and
+\c ref_srs_channel_estimator_cuda reproduce the gNB's host SRS estimator and are
+checked against OCUDU-generated golden vectors (\c tests/data); the reader is
+\c ocudu_dapp_sdk/srs_channel_estimator_vectors.h and \c ocudu-dapp-srs-replay
+replays vector files, including live captures from \c examples/e3_srs_dataset.
+
 \section sdk_ref_b Class B
 
 \c ref_scheduler_cpu only. Baseline-replica host-record pipeline (rank / OLLA /

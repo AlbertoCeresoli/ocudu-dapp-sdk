@@ -97,7 +97,20 @@ foreach(fragment IN ITEMS
 endforeach()
 
 string(FIND "${document}" "\"class\": \"A\"" class_a_position)
-if(NOT class_a_position EQUAL -1)
+string(FIND "${document}" "\"srs_profile\"" srs_profile_position)
+if(NOT srs_profile_position EQUAL -1)
+  foreach(fragment IN ITEMS
+      "\"interface_id\": 65543"
+      "\"max_rx_ports\": 8"
+      "\"max_tx_ports\": 4"
+      "\"max_sequence_length\": 1632"
+      "\"comb_mask\": 3")
+    string(FIND "${document}" "${fragment}" position)
+    if(position EQUAL -1)
+      message(FATAL_ERROR "Generated SRS channel-estimator manifest violates the reference v1 envelope: ${fragment}")
+    endif()
+  endforeach()
+elseif(NOT class_a_position EQUAL -1)
   string(FIND "${document}" "\"backends\": [\"cuda\"]" cuda_position)
   if(cuda_position EQUAL -1)
     set(expected_layers 1)

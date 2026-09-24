@@ -179,6 +179,17 @@ that the same signed, SBOM-bound packages can be selected at startup, managed
 in shadow through ordinary E3 configuration and model operations, then
 activated and unloaded without a startup-only loader or version change.
 
+## SRS channel estimator
+
+`ref_srs_channel_estimator_cpu` and `ref_srs_channel_estimator_cuda` implement
+`OCUDU_DAPP_INTERFACE_SRS_CHANNEL_ESTIMATOR_V1`: SRS pilots and reference
+sequences in, the wideband channel matrix and noise, EPRE, RSRP and time
+alignment out. Both reproduce the gNB's host SRS estimator and are checked
+against golden vectors OCUDU generates from it, so they are a verified starting
+point for a learned estimator. `examples/e3_srs_dataset` records training data
+for this interface from a live cell. Details:
+[docs/reference_packages.md](docs/reference_packages.md).
+
 ## Class-A CUDA replacement depths
 
 The CUDA examples expose the same three replacement depths as separate artifacts:

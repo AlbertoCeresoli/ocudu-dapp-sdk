@@ -12,6 +12,7 @@
 #include <ocudu/dapp/use_cases/v1/receiver_completion.h>
 #include <ocudu/dapp/use_cases/v1/scheduler.h>
 #include <ocudu/dapp/use_cases/v1/spectrum.h>
+#include <ocudu/dapp/use_cases/v1/srs_channel_estimator.h>
 #include <ocudu/dapp/use_cases/v1/srs_isac.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -195,5 +196,47 @@ int main(void)
   PRINT_FIELD(ocudu_dapp_receiver_completion_api_v1, release);
   PRINT_FIELD(ocudu_dapp_receiver_completion_api_v1, retire);
   PRINT_FIELD(ocudu_dapp_receiver_completion_api_v1, reserved);
+  PRINT_VALUE(OCUDU_DAPP_INTERFACE_SRS_CHANNEL_ESTIMATOR_V1);
+  PRINT_VALUE(OCUDU_DAPP_METADATA_SRS_CHANNEL_ESTIMATOR_V1);
+  PRINT_VALUE(OCUDU_DAPP_SRS_PROFILE_V1);
+  PRINT_VALUE(OCUDU_DAPP_SRS_MEASUREMENT_COUNT_V1);
+  PRINT_TYPE(ocudu_dapp_srs_channel_estimator_metadata_v1);
+  PRINT_TYPE(ocudu_dapp_srs_profile_v1);
+  PRINT_TYPE(ocudu_dapp_srs_channel_estimator_input_v1);
+  PRINT_TYPE(ocudu_dapp_srs_channel_estimator_output_v1);
+  PRINT_TYPE(ocudu_dapp_srs_channel_estimator_interface_v1);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, nof_rx_ports);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, nof_tx_ports);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, start_symbol);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, nof_symbols);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, sequence_length);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, comb_size);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, nof_pilot_sets);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, n_cs_max);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, pilot_set);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, cyclic_shift);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, first_subcarrier);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, sequence_group);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, sequence_number);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, subcarrier_spacing_hz);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, numerology);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, grid_nof_subcarriers);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, flags);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, rnti);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, max_time_alignment_s);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_metadata_v1, reserved);
+  PRINT_FIELD(ocudu_dapp_srs_profile_v1, max_nof_rx_ports);
+  PRINT_FIELD(ocudu_dapp_srs_profile_v1, max_nof_tx_ports);
+  PRINT_FIELD(ocudu_dapp_srs_profile_v1, max_sequence_length);
+  PRINT_FIELD(ocudu_dapp_srs_profile_v1, comb_mask);
+  PRINT_FIELD(ocudu_dapp_srs_profile_v1, flags);
+  PRINT_FIELD(ocudu_dapp_srs_profile_v1, reserved);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_input_v1, rx_symbols);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_input_v1, reference_symbols);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_input_v1, srs);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_output_v1, channel_matrix);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_output_v1, measurements);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_output_v1, reserved);
+  PRINT_FIELD(ocudu_dapp_srs_channel_estimator_interface_v1, invoke);
   return 0;
 }

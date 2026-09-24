@@ -6,6 +6,7 @@
 #include "ocudu_dapp_sdk/process_cuda_client.h"
 #include "ocudu_dapp_sdk/receiver_cuda.h"
 #include "ocudu_dapp_sdk/spectrum_cuda.h"
+#include "ocudu_dapp_sdk/srs_channel_estimator_cuda.h"
 #include "ocudu_dapp_sdk/srs_isac_cuda.h"
 
 int main()

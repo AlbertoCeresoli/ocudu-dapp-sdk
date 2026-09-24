@@ -434,6 +434,32 @@ ocudu_dapp_pusch_profile_v1 ocudu::dapp::reference::make_pusch_profile(uint32_t 
   return result;
 }
 
+ocudu_dapp_srs_profile_v1 ocudu::dapp::reference::make_srs_profile(uint32_t max_rx_ports, uint32_t max_tx_ports,
+                                                                   uint32_t max_sequence_length,
+                                                                   uint32_t comb_mask) noexcept
+{
+  ocudu_dapp_srs_profile_v1 result{};
+  result.struct_size         = sizeof(result);
+  result.abi_major           = OCUDU_DAPP_ABI_MAJOR_V1;
+  result.abi_minor           = OCUDU_DAPP_ABI_MINOR_V1;
+  result.profile_id          = OCUDU_DAPP_SRS_PROFILE_V1;
+  result.max_nof_rx_ports    = max_rx_ports;
+  result.max_nof_tx_ports    = max_tx_ports;
+  result.max_sequence_length = max_sequence_length;
+  result.comb_mask           = comb_mask;
+  return result;
+}
+
+ocudu_dapp_interface_descriptor_v1
+ocudu::dapp::reference::make_interface(uint32_t interface_id, uint32_t dapp_class, uint32_t placement_mask,
+                                       uint32_t threading, const void* vtable, uint64_t capabilities,
+                                       const ocudu_dapp_srs_profile_v1* profile) noexcept
+{
+  auto result             = make_interface(interface_id, dapp_class, placement_mask, threading, vtable, capabilities);
+  result.use_case_profile = profile;
+  return result;
+}
+
 ocudu_dapp_interface_descriptor_v1
 ocudu::dapp::reference::make_interface(uint32_t interface_id, uint32_t dapp_class, uint32_t placement_mask,
                                        uint32_t threading, const void* vtable, uint64_t capabilities,
