@@ -26,3 +26,6 @@ add_test(NAME example.e3_spectrum_sensing.detector
 set_tests_properties(example.e3_spectrum_sensing.detector PROPERTIES
   LABELS "example;e3;python;offline" TIMEOUT 120
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+if(OCUDU_E3_TEST_ENVIRONMENT)
+  set_tests_properties(example.e3_spectrum_sensing.detector PROPERTIES ENVIRONMENT "${OCUDU_E3_TEST_ENVIRONMENT}")
+endif()

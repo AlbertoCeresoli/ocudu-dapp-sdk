@@ -18,6 +18,8 @@ if [[ "${profile}" == "build" ]]; then
     flatbuffers-compiler libflatbuffers-dev libgtest-dev
     libboost-program-options-dev libconfig++-dev libfftw3-dev
     libmbedtls-dev libsctp-dev libyaml-cpp-dev
+    # Paired-host interoperability: libe3 over ZMQ and in Protobuf.
+    libzmq3-dev libprotobuf-dev protobuf-compiler
     # Python Class-C pybind bindings compile in CI (tests still probe torch).
     python3-dev python3-pybind11
   )

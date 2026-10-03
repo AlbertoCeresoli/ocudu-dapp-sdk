@@ -1214,15 +1214,16 @@ TEST(reference_phy_algorithms_cuda, rejects_host_tensors_and_unsupported_modulat
 
 TEST(reference_phy_algorithms_cuda, receiver_supports_all_nr_qam_orders)
 {
-  resident_fixture fixture;
-  __half*          d_llrs = allocate<__half>(fixture.indices.size() * 8);
-  float* d_noise = allocate<float>(fixture.indices.size());
-  float2* d_symbols = allocate<float2>(fixture.indices.size());
+  resident_fixture               fixture;
+  __half*                        d_llrs    = allocate<__half>(fixture.indices.size() * 8);
+  float*                         d_noise   = allocate<float>(fixture.indices.size());
+  float2*                        d_symbols = allocate<float2>(fixture.indices.size());
   ocudu_dapp_receiver_metrics_v1 metrics{};
   metrics.struct_size = sizeof(metrics);
-  metrics.abi_major = OCUDU_DAPP_ABI_MAJOR_V1;
-  metrics.post_equalization_noise = device_tensor(d_noise, OCUDU_DAPP_ELEMENT_F32_V1, OCUDU_DAPP_ACCESS_WRITE_V1,
-      {fixture.indices.size(), 1}, OCUDU_DAPP_LAYOUT_PUSCH_POST_EQ_NOISE_DATA_RE_LAYER_V1);
+  metrics.abi_major   = OCUDU_DAPP_ABI_MAJOR_V1;
+  metrics.post_equalization_noise =
+      device_tensor(d_noise, OCUDU_DAPP_ELEMENT_F32_V1, OCUDU_DAPP_ACCESS_WRITE_V1, {fixture.indices.size(), 1},
+                    OCUDU_DAPP_LAYOUT_PUSCH_POST_EQ_NOISE_DATA_RE_LAYER_V1);
 
   ocudu_dapp_receiver_input_v1 input{fixture.invocation, fixture.grid_view, fixture.pusch_view, fixture.dmrs_view};
   for (auto modulation : {OCUDU_DAPP_MODULATION_QPSK_V1, OCUDU_DAPP_MODULATION_QAM16_V1, OCUDU_DAPP_MODULATION_QAM64_V1,
@@ -1248,18 +1249,25 @@ TEST(reference_phy_algorithms_cuda, receiver_supports_all_nr_qam_orders)
       EXPECT_EQ(__half2float(llrs[2U * bit]) > 0.0F, ((real_bits >> bit) & 1U) == 0);
       EXPECT_EQ(__half2float(llrs[2U * bit + 1U]) > 0.0F, ((imag_bits >> bit) & 1U) == 0);
     }
-    metrics.equalized_symbols = device_tensor(d_symbols, OCUDU_DAPP_ELEMENT_CF32_V1, OCUDU_DAPP_ACCESS_WRITE_V1,
-        {fixture.indices.size(), 1}, OCUDU_DAPP_LAYOUT_PUSCH_EQUALIZED_DATA_RE_LAYER_V1);
-    output.metrics = {sizeof(output.metrics), OCUDU_DAPP_ABI_MAJOR_V1, OCUDU_DAPP_ABI_MINOR_V1,
-                      OCUDU_DAPP_METADATA_RECEIVER_METRICS_V1, 1, {&metrics, sizeof(metrics), 0}};
+    metrics.equalized_symbols =
+        device_tensor(d_symbols, OCUDU_DAPP_ELEMENT_CF32_V1, OCUDU_DAPP_ACCESS_WRITE_V1, {fixture.indices.size(), 1},
+                      OCUDU_DAPP_LAYOUT_PUSCH_EQUALIZED_DATA_RE_LAYER_V1);
+    output.metrics = {sizeof(output.metrics),
+                      OCUDU_DAPP_ABI_MAJOR_V1,
+                      OCUDU_DAPP_ABI_MINOR_V1,
+                      OCUDU_DAPP_METADATA_RECEIVER_METRICS_V1,
+                      1,
+                      {&metrics, sizeof(metrics), 0}};
     ASSERT_EQ(receive_cuda(input, output, fixture.receiver_state, fixture.receiver_worker), OCUDU_DAPP_OK_V1);
     ASSERT_NE(output.reserved0 & OCUDU_DAPP_RECEIVER_EQUALIZED_SYMBOLS_VALID_V1, 0U);
     ASSERT_EQ(cudaStreamSynchronize(fixture.stream), cudaSuccess);
     std::vector<__half> with_symbols(llrs.size());
     std::vector<float2> symbols(fixture.indices.size());
-    ASSERT_EQ(cudaMemcpy(with_symbols.data(), d_llrs, llrs.size() * sizeof(__half), cudaMemcpyDeviceToHost), cudaSuccess);
+    ASSERT_EQ(cudaMemcpy(with_symbols.data(), d_llrs, llrs.size() * sizeof(__half), cudaMemcpyDeviceToHost),
+              cudaSuccess);
     EXPECT_EQ(std::memcmp(llrs.data(), with_symbols.data(), llrs.size() * sizeof(__half)), 0);
-    ASSERT_EQ(cudaMemcpy(symbols.data(), d_symbols, symbols.size() * sizeof(float2), cudaMemcpyDeviceToHost), cudaSuccess);
+    ASSERT_EQ(cudaMemcpy(symbols.data(), d_symbols, symbols.size() * sizeof(float2), cudaMemcpyDeviceToHost),
+              cudaSuccess);
     for (size_t i = 0; i != symbols.size(); ++i) {
       const auto received = unpack_cbf16(fixture.grid[fixture.indices[i]]);
       EXPECT_NEAR(symbols[i].x, received.x / 2.0F, 1.e-5F);
@@ -1267,10 +1275,12 @@ TEST(reference_phy_algorithms_cuda, receiver_supports_all_nr_qam_orders)
     }
     // Aliased auxiliary storage must reject before any enqueue.
     metrics.equalized_symbols.native_handle = output.llrs.native_handle;
-    EXPECT_EQ(receive_cuda(input, output, fixture.receiver_state, fixture.receiver_worker), OCUDU_DAPP_INVALID_OUTPUT_V1);
+    EXPECT_EQ(receive_cuda(input, output, fixture.receiver_state, fixture.receiver_worker),
+              OCUDU_DAPP_INVALID_OUTPUT_V1);
     EXPECT_EQ(output.reserved0, 0U);
     metrics.equalized_symbols.native_handle = reinterpret_cast<uintptr_t>(d_symbols) + sizeof(float);
-    EXPECT_EQ(receive_cuda(input, output, fixture.receiver_state, fixture.receiver_worker), OCUDU_DAPP_INVALID_OUTPUT_V1);
+    EXPECT_EQ(receive_cuda(input, output, fixture.receiver_state, fixture.receiver_worker),
+              OCUDU_DAPP_INVALID_OUTPUT_V1);
     metrics.equalized_symbols = {};
     ASSERT_EQ(receive_cuda(input, output, fixture.receiver_state, fixture.receiver_worker), OCUDU_DAPP_OK_V1);
     EXPECT_EQ(output.reserved0 & OCUDU_DAPP_RECEIVER_EQUALIZED_SYMBOLS_VALID_V1, 0U);

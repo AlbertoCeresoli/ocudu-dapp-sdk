@@ -43,7 +43,7 @@ ocudu_mcp_server.py
   └── E3Session (thread)   owns the SCTP association: E3 setup → subscribe → ingest indications;
                            management calls are marshalled onto this thread (one association
                            carries both directions)
-        │  E3AP-OCUDU-V1 (ASN.1 APER over SCTP, port 36423)
+        │  E3AP-OCUDU-V2 (libe3 E3AP + OCUDU additions, ASN.1 APER over SCTP, port 36423)
         ▼
 gNB E3AP endpoint: telemetry service model (RAN function 10) + management (RAN function 11)
 ```

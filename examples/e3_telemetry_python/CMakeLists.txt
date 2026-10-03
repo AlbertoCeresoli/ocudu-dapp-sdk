@@ -26,3 +26,6 @@ add_test(NAME example.e3_telemetry_python.scripts
 set_tests_properties(example.e3_telemetry_python.scripts PROPERTIES
   LABELS "example;e3;python;offline" TIMEOUT 120
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+if(OCUDU_E3_TEST_ENVIRONMENT)
+  set_tests_properties(example.e3_telemetry_python.scripts PROPERTIES ENVIRONMENT "${OCUDU_E3_TEST_ENVIRONMENT}")
+endif()

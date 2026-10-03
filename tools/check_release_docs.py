@@ -84,8 +84,10 @@ def main() -> int:
         except UnicodeDecodeError:
             continue
 
+        # REUSE-IgnoreStart
         if (path.suffix in SOURCE_SUFFIXES or path.name == "CMakeLists.txt") and "SPDX-License-Identifier:" not in text:
             errors.append(f"missing SPDX license identifier: {relative}")
+        # REUSE-IgnoreEnd
         for token, description in FORBIDDEN.items():
             if token in text:
                 errors.append(f"{relative}: contains {description}: {token}")

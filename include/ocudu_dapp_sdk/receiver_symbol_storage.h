@@ -9,12 +9,12 @@
 namespace ocudu::dapp::reference {
 // Pointer-domain views only, after the receiver's normal tensor validation.
 // Check the full declared lease, not just the elements written this grant.
-inline bool receiver_symbol_storage_is_disjoint(const ocudu_dapp_tensor_view_v1& symbols,
-                                                const ocudu_dapp_receiver_input_v1& input,
+inline bool receiver_symbol_storage_is_disjoint(const ocudu_dapp_tensor_view_v1&     symbols,
+                                                const ocudu_dapp_receiver_input_v1&  input,
                                                 const ocudu_dapp_receiver_output_v1& output,
-                                                const ocudu_dapp_pusch_metadata_v1& pusch,
-                                                const ocudu_dapp_dmrs_metadata_v1& dmrs,
-                                                const ocudu_dapp_tensor_view_v1& noise) noexcept
+                                                const ocudu_dapp_pusch_metadata_v1&  pusch,
+                                                const ocudu_dapp_dmrs_metadata_v1&   dmrs,
+                                                const ocudu_dapp_tensor_view_v1&     noise) noexcept
 {
   const auto interval = [](const ocudu_dapp_tensor_view_v1& v, uint64_t& begin, uint64_t& end) {
     constexpr auto maximum = std::numeric_limits<uintptr_t>::max();
@@ -30,7 +30,8 @@ inline bool receiver_symbol_storage_is_disjoint(const ocudu_dapp_tensor_view_v1&
   };
   uint64_t begin{}, end{};
   // CUDA float2 stores require eight-byte alignment; host CF32 may use four.
-  const uint64_t alignment = symbols.domain == OCUDU_DAPP_MEM_ACCELERATOR_DEVICE_V1 ? 2 * sizeof(float) : alignof(float);
+  const uint64_t alignment =
+      symbols.domain == OCUDU_DAPP_MEM_ACCELERATOR_DEVICE_V1 ? 2 * sizeof(float) : alignof(float);
   if (!interval(symbols, begin, end) || begin % alignment != 0) {
     return false;
   }

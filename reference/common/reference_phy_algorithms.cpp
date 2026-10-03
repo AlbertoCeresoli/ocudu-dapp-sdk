@@ -975,7 +975,7 @@ ocudu_dapp_status_v1 ocudu::dapp::reference::receive(const ocudu_dapp_receiver_i
   const ocudu_dapp_receiver_metrics_v1* receiver_metrics = nullptr;
   if (output.metrics.metadata.data != nullptr || output.metrics.metadata.size != 0) {
     constexpr size_t minimum = offsetof(ocudu_dapp_receiver_metrics_v1, reserved);
-    const auto& wrapper = output.metrics;
+    const auto&      wrapper = output.metrics;
     if (wrapper.struct_size < sizeof(wrapper) || wrapper.abi_major != OCUDU_DAPP_ABI_MAJOR_V1 ||
         wrapper.metadata_schema_id != OCUDU_DAPP_METADATA_RECEIVER_METRICS_V1 || wrapper.metadata_schema_version != 1 ||
         wrapper.metadata.data == nullptr || wrapper.metadata.size < minimum ||
@@ -988,11 +988,12 @@ ocudu_dapp_status_v1 ocudu::dapp::reference::receive(const ocudu_dapp_receiver_i
       return OCUDU_DAPP_INVALID_OUTPUT_V1;
     }
   }
-  const auto* symbol_output = receiver_metrics != nullptr &&
-                                     receiver_metrics->struct_size >= OCUDU_DAPP_RECEIVER_EQUALIZED_SYMBOLS_MIN_SIZE_V1 &&
-                                     receiver_metrics->equalized_symbols.struct_size != 0
-                                 ? &receiver_metrics->equalized_symbols
-                                 : nullptr;
+  const auto* symbol_output =
+      receiver_metrics != nullptr &&
+              receiver_metrics->struct_size >= OCUDU_DAPP_RECEIVER_EQUALIZED_SYMBOLS_MIN_SIZE_V1 &&
+              receiver_metrics->equalized_symbols.struct_size != 0
+          ? &receiver_metrics->equalized_symbols
+          : nullptr;
   if (receiver_metrics != nullptr &&
       (!host_tensor(receiver_metrics->post_equalization_noise, OCUDU_DAPP_ELEMENT_F32_V1, 2,
                     OCUDU_DAPP_ACCESS_WRITE_V1) ||

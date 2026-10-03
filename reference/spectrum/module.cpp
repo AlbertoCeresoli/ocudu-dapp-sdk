@@ -77,13 +77,13 @@ ocudu_dapp_status_v1 publish(void* context, const ocudu_dapp_spectrum_input_v1* 
     return OCUDU_DAPP_INVALID_INPUT_V1;
   }
   // Vendor-private numeric metric ids (the push-path uint32 namespace is
-// unregistered — see docs/known_limitations.md). Prefer the string-named
-// describe_metrics/read_metrics catalog for anything a consumer must interpret.
-constexpr uint32_t metric_id_samples           = 0x10001U;
-constexpr uint32_t metric_id_occupied_ppm      = 0x10002U;
-constexpr uint32_t metric_id_intents_published = 0x10003U;
+  // unregistered — see docs/known_limitations.md). Prefer the string-named
+  // describe_metrics/read_metrics catalog for anything a consumer must interpret.
+  constexpr uint32_t metric_id_samples           = 0x10001U;
+  constexpr uint32_t metric_id_occupied_ppm      = 0x10002U;
+  constexpr uint32_t metric_id_intents_published = 0x10003U;
 
-const auto status = spectrum_context::begin_invocation(context);
+  const auto status = spectrum_context::begin_invocation(context);
   if (status != OCUDU_DAPP_OK_V1) {
     return status;
   }
@@ -93,19 +93,19 @@ const auto status = spectrum_context::begin_invocation(context);
   std::array<uint8_t, OCUDU_DAPP_SPECTRUM_MAX_PRBS_V1> confidence{};
   uint32_t                                             nof_prbs = 0;
   spectrum_radiometer_result                           result{};
-  const auto detected = guard_algorithm_call([&] {
-    const bool ok = plan_present
-                        ? run_spectrum_prb_radiometer(view, expected_use, slot->amplitude_scale, 1.0, 12,
-                                                      confidence.data(), confidence.size(), nof_prbs, &result)
-                        : run_spectrum_prb_radiometer(view, slot->amplitude_scale, 1.0, 12, confidence.data(),
-                                                      confidence.size(), nof_prbs, &result);
+  const auto                                           detected = guard_algorithm_call([&] {
+    const bool ok = plan_present ? run_spectrum_prb_radiometer(view, expected_use, slot->amplitude_scale, 1.0, 12,
+                                                                                                         confidence.data(), confidence.size(), nof_prbs, &result)
+                                                                           : run_spectrum_prb_radiometer(view, slot->amplitude_scale, 1.0, 12, confidence.data(),
+                                                                                                         confidence.size(), nof_prbs, &result);
     return ok ? OCUDU_DAPP_OK_V1 : OCUDU_DAPP_INVALID_INPUT_V1;
   });
   if (detected != OCUDU_DAPP_OK_V1) {
     return detected;
   }
   spectrum_context::add_metric(context, metric_id_samples, result.samples);
-  spectrum_context::add_metric(context, metric_id_occupied_ppm, static_cast<uint64_t>(result.occupied_fraction * 1'000'000.0));
+  spectrum_context::add_metric(context, metric_id_occupied_ppm,
+                               static_cast<uint64_t>(result.occupied_fraction * 1'000'000.0));
   const auto* host = spectrum_context::host_api(context);
   if (host == nullptr || host->publish_prepared == nullptr) {
     return OCUDU_DAPP_OK_V1;

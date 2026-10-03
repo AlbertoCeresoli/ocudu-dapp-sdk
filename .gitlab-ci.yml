@@ -19,7 +19,7 @@ release metadata and docs:
     - .gitlab/ci/install_public_ci_deps.sh docs
   script:
     - python3 tools/check_release_docs.py
-    - python3 -m pip install --quiet --break-system-packages 'reuse==6.2.0'
+    - python3 -m pip install --quiet --break-system-packages 'reuse[charset-normalizer]==6.2.0'
     - python3 -m reuse lint
     - >-
       git ls-files '*.h' '*.cpp' '*.cu' '*.cuh'
@@ -70,7 +70,17 @@ cross repository interoperability:
       -DOCUDU_DAPP_REF_EXTRAS=ON -DOCUDU_DAPP_REQUIRE_ABI_COMPILER_MATRIX=ON
       -DOCUDU_DAPP_REQUIRE_PYTHON_EXAMPLES=ON
     - cmake --build build-ci --parallel "${OCUDU_CI_JOBS}"
-    - OCUDU_E3AP_TEST_SERVER="${OCUDU_HOST_BUILD_DIR}/tests/unittests/dapp/e3ap_test_server" python3 "${OCUDU_HOST_SOURCE_DIR}/scripts/check_dapp_interop_gate.py" --profile sdk --build build-ci
+    # The live SDK-against-host E3 sessions need kernel SCTP (E3AP's transport). Shared runners have
+    # none: there the bootstrap already ran the host's libe3 interop over ZMQ, the SDK suite runs
+    # offline, and the job says the live sessions did not run (they need an SCTP-capable runner).
+    - |
+      if python3 -c "import socket; socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_SCTP).close()"; then
+        OCUDU_E3AP_TEST_SERVER="${OCUDU_HOST_BUILD_DIR}/tests/unittests/dapp/e3ap_test_server" python3 "${OCUDU_HOST_SOURCE_DIR}/scripts/check_dapp_interop_gate.py" --profile sdk --build build-ci
+      else
+        echo "SKIPPED: this runner's kernel cannot open SCTP sockets; the live SDK-against-host E3 sessions did not run."
+        echo "The host's libe3 interoperability ran over ZMQ (APER and Protobuf) in the bootstrap above."
+        ctest --test-dir build-ci --output-on-failure --output-junit dapp-interop.xml -j"${OCUDU_CI_JOBS}"
+      fi
   artifacts:
     when: always
     reports:
@@ -115,10 +125,6 @@ cpu asan ubsan:
 # silently passing by absence. Set OCUDU_DAPP_CUDA_RUNNER_TAG and
 # OCUDU_CUDA_ARCHITECTURES as CI/CD variables to enable the real job.
 
-    - cmake --install build-ci --prefix "${CI_PROJECT_DIR}/install-ci"
-    - cmake -S examples/vendor_min -B build-vendor-ci
-      -DCMAKE_PREFIX_PATH="${OCUDU_HOST_INSTALL_PREFIX};${CI_PROJECT_DIR}/install-ci"
-    - cmake --build build-vendor-ci --parallel 8
 
 cuda release unavailable:
   stage: gpu
@@ -155,6 +161,11 @@ cuda release:
       -DCMAKE_CUDA_ARCHITECTURES="${OCUDU_CUDA_ARCHITECTURES}"
     - cmake --build build-ci --parallel "${OCUDU_CI_JOBS}"
     - ctest --test-dir build-ci --output-on-failure --output-junit ctest.xml -j1
+    # vendor_min is a CUDA example consuming the installed SDK: built where nvcc exists.
+    - cmake --install build-ci --prefix "${CI_PROJECT_DIR}/install-ci"
+    - cmake -S examples/vendor_min -B build-vendor-ci
+      -DCMAKE_PREFIX_PATH="${OCUDU_HOST_INSTALL_PREFIX};${CI_PROJECT_DIR}/install-ci"
+    - cmake --build build-vendor-ci --parallel 8
   artifacts:
     when: always
     reports:

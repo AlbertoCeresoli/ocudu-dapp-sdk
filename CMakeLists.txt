@@ -68,6 +68,16 @@ if(OCUDU_DAPP_BUILD_CUDA_EXAMPLES)
 endif()
 
 find_package(OCUDUDAppSDK 1 CONFIG REQUIRED)
+# The E3 Python examples run against the ocudu_e3 client and E3 schemas of the host found above,
+# never a stray copy elsewhere (a sibling checkout, an older install): the client and the agent must
+# speak the same E3AP.
+get_filename_component(OCUDU_DAPP_HOST_PREFIX "${OCUDUDAppSDK_DIR}/../../.." ABSOLUTE)
+set(OCUDU_E3_TEST_ENVIRONMENT "")
+if(EXISTS "${OCUDU_DAPP_HOST_PREFIX}/share/ocudu/dapp/python/ocudu_e3")
+  set(OCUDU_E3_TEST_ENVIRONMENT
+      "OCUDU_E3_PYTHON_DIR=${OCUDU_DAPP_HOST_PREFIX}/share/ocudu/dapp/python"
+      "OCUDU_E3_SCHEMA_DIR=${OCUDU_DAPP_HOST_PREFIX}/share/ocudu/dapp/schema")
+endif()
 include(GNUInstallDirs)
 include(CTest)
 

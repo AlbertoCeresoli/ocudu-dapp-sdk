@@ -475,24 +475,24 @@ TEST(reference_phy_algorithms, receiver_emits_max_log_qpsk_llrs_for_data_res)
 
 TEST(reference_phy_algorithms, receiver_optional_symbols_preserve_llrs_noise_and_unsliced_qam)
 {
-  fixture instance;
-  std::array<int8_t, 48> llrs{};
-  std::array<float, 6> noise{};
-  std::array<cf32, 8> symbols{}; // Two trailing canaries must remain untouched.
+  fixture                      instance;
+  std::array<int8_t, 48>       llrs{};
+  std::array<float, 6>         noise{};
+  std::array<cf32, 8>          symbols{}; // Two trailing canaries must remain untouched.
   ocudu_dapp_receiver_input_v1 input{};
   input.rx_grid = instance.rx_view();
-  input.pusch = typed(OCUDU_DAPP_METADATA_PUSCH_V1, instance.pusch);
-  input.dmrs = typed(OCUDU_DAPP_METADATA_DMRS_V1, instance.dmrs);
+  input.pusch   = typed(OCUDU_DAPP_METADATA_PUSCH_V1, instance.pusch);
+  input.dmrs    = typed(OCUDU_DAPP_METADATA_DMRS_V1, instance.dmrs);
   ocudu_dapp_receiver_metrics_v1 metrics{};
-  metrics.struct_size = sizeof(metrics);
-  metrics.abi_major = OCUDU_DAPP_ABI_MAJOR_V1;
+  metrics.struct_size             = sizeof(metrics);
+  metrics.abi_major               = OCUDU_DAPP_ABI_MAJOR_V1;
   metrics.post_equalization_noise = tensor(noise.data(), OCUDU_DAPP_ELEMENT_F32_V1, OCUDU_DAPP_ACCESS_WRITE_V1, {6, 1});
-  metrics.post_equalization_noise.layout_id = OCUDU_DAPP_LAYOUT_PUSCH_POST_EQ_NOISE_DATA_RE_LAYER_V1;
+  metrics.post_equalization_noise.layout_id      = OCUDU_DAPP_LAYOUT_PUSCH_POST_EQ_NOISE_DATA_RE_LAYER_V1;
   metrics.post_equalization_noise.layout_version = 1;
   ocudu_dapp_receiver_output_v1 output{};
   output.metrics = typed(OCUDU_DAPP_METADATA_RECEIVER_METRICS_V1, metrics);
-  for (auto qm : {OCUDU_DAPP_MODULATION_QPSK_V1, OCUDU_DAPP_MODULATION_QAM16_V1,
-                  OCUDU_DAPP_MODULATION_QAM64_V1, OCUDU_DAPP_MODULATION_QAM256_V1}) {
+  for (auto qm : {OCUDU_DAPP_MODULATION_QPSK_V1, OCUDU_DAPP_MODULATION_QAM16_V1, OCUDU_DAPP_MODULATION_QAM64_V1,
+                  OCUDU_DAPP_MODULATION_QAM256_V1}) {
     instance.pusch.modulation = qm;
     const cf32 data{axis_level(0, qm / 2) + 0.025F, axis_level(1, qm / 2) - 0.015F};
     for (size_t i = 0; i != instance.rx.size(); ++i) {
@@ -500,13 +500,13 @@ TEST(reference_phy_algorithms, receiver_optional_symbols_preserve_llrs_noise_and
         instance.rx[i] = multiply({2.0F, 1.0F}, data);
       }
     }
-    output.llrs = tensor(llrs.data(), OCUDU_DAPP_ELEMENT_I8_V1, OCUDU_DAPP_ACCESS_WRITE_V1, {6U * qm});
+    output.llrs               = tensor(llrs.data(), OCUDU_DAPP_ELEMENT_I8_V1, OCUDU_DAPP_ACCESS_WRITE_V1, {6U * qm});
     metrics.equalized_symbols = {};
     ASSERT_EQ(receive(input, output), OCUDU_DAPP_OK_V1);
-    const auto expected_llrs = llrs;
+    const auto expected_llrs  = llrs;
     const auto expected_noise = noise;
     metrics.equalized_symbols = tensor(symbols.data(), OCUDU_DAPP_ELEMENT_CF32_V1, OCUDU_DAPP_ACCESS_WRITE_V1, {6, 1});
-    metrics.equalized_symbols.layout_id = OCUDU_DAPP_LAYOUT_PUSCH_EQUALIZED_DATA_RE_LAYER_V1;
+    metrics.equalized_symbols.layout_id      = OCUDU_DAPP_LAYOUT_PUSCH_EQUALIZED_DATA_RE_LAYER_V1;
     metrics.equalized_symbols.layout_version = 1;
     symbols.fill({123.0F, -456.0F});
     ASSERT_EQ(receive(input, output), OCUDU_DAPP_OK_V1);
@@ -529,26 +529,26 @@ TEST(reference_phy_algorithms, receiver_optional_symbols_preserve_llrs_noise_and
 TEST(reference_phy_algorithms, receiver_accepts_actual_legacy_prefix_without_reading_symbol_tail)
 {
   struct legacy_metrics {
-    uint32_t struct_size;
-    uint16_t abi_major;
-    uint16_t abi_minor;
+    uint32_t                  struct_size;
+    uint16_t                  abi_major;
+    uint16_t                  abi_minor;
     ocudu_dapp_tensor_view_v1 post_equalization_noise;
-    uint64_t reserved[4];
+    uint64_t                  reserved[4];
   } metrics{};
   static_assert(sizeof(metrics) == offsetof(ocudu_dapp_receiver_metrics_v1, equalized_symbols));
-  fixture instance;
-  std::array<int8_t, 12> llrs{};
-  std::array<float, 6> noise{};
+  fixture                      instance;
+  std::array<int8_t, 12>       llrs{};
+  std::array<float, 6>         noise{};
   ocudu_dapp_receiver_input_v1 input{};
-  input.rx_grid = instance.rx_view();
-  input.pusch = typed(OCUDU_DAPP_METADATA_PUSCH_V1, instance.pusch);
-  input.dmrs = typed(OCUDU_DAPP_METADATA_DMRS_V1, instance.dmrs);
-  metrics.struct_size = sizeof(metrics);
-  metrics.abi_major = OCUDU_DAPP_ABI_MAJOR_V1;
+  input.rx_grid                   = instance.rx_view();
+  input.pusch                     = typed(OCUDU_DAPP_METADATA_PUSCH_V1, instance.pusch);
+  input.dmrs                      = typed(OCUDU_DAPP_METADATA_DMRS_V1, instance.dmrs);
+  metrics.struct_size             = sizeof(metrics);
+  metrics.abi_major               = OCUDU_DAPP_ABI_MAJOR_V1;
   metrics.post_equalization_noise = tensor(noise.data(), OCUDU_DAPP_ELEMENT_F32_V1, OCUDU_DAPP_ACCESS_WRITE_V1, {6, 1});
   metrics.post_equalization_noise.layout_id = OCUDU_DAPP_LAYOUT_PUSCH_POST_EQ_NOISE_DATA_RE_LAYER_V1;
   ocudu_dapp_receiver_output_v1 output{};
-  output.llrs = tensor(llrs.data(), OCUDU_DAPP_ELEMENT_I8_V1, OCUDU_DAPP_ACCESS_WRITE_V1, {12});
+  output.llrs    = tensor(llrs.data(), OCUDU_DAPP_ELEMENT_I8_V1, OCUDU_DAPP_ACCESS_WRITE_V1, {12});
   output.metrics = typed(OCUDU_DAPP_METADATA_RECEIVER_METRICS_V1, metrics);
   ASSERT_EQ(receive(input, output), OCUDU_DAPP_OK_V1);
   EXPECT_EQ(output.reserved0, OCUDU_DAPP_RECEIVER_METRICS_VALID_V1);
@@ -561,46 +561,78 @@ TEST(reference_phy_algorithms, receiver_rejects_malformed_or_aliased_symbol_requ
 {
   for (unsigned probe = 0; probe != 15; ++probe) {
     SCOPED_TRACE(probe);
-    fixture instance;
-    std::array<int8_t, 12> llrs{};
-    std::array<float, 6> noise{};
-    std::array<cf32, 6> symbols{};
+    fixture                      instance;
+    std::array<int8_t, 12>       llrs{};
+    std::array<float, 6>         noise{};
+    std::array<cf32, 6>          symbols{};
     ocudu_dapp_receiver_input_v1 input{};
     input.rx_grid = instance.rx_view();
-    input.pusch = typed(OCUDU_DAPP_METADATA_PUSCH_V1, instance.pusch);
-    input.dmrs = typed(OCUDU_DAPP_METADATA_DMRS_V1, instance.dmrs);
+    input.pusch   = typed(OCUDU_DAPP_METADATA_PUSCH_V1, instance.pusch);
+    input.dmrs    = typed(OCUDU_DAPP_METADATA_DMRS_V1, instance.dmrs);
     ocudu_dapp_receiver_metrics_v1 metrics{};
     metrics.struct_size = sizeof(metrics);
-    metrics.abi_major = OCUDU_DAPP_ABI_MAJOR_V1;
-    metrics.post_equalization_noise = tensor(noise.data(), OCUDU_DAPP_ELEMENT_F32_V1, OCUDU_DAPP_ACCESS_WRITE_V1, {6, 1});
+    metrics.abi_major   = OCUDU_DAPP_ABI_MAJOR_V1;
+    metrics.post_equalization_noise =
+        tensor(noise.data(), OCUDU_DAPP_ELEMENT_F32_V1, OCUDU_DAPP_ACCESS_WRITE_V1, {6, 1});
     metrics.post_equalization_noise.layout_id = OCUDU_DAPP_LAYOUT_PUSCH_POST_EQ_NOISE_DATA_RE_LAYER_V1;
-    auto& v = metrics.equalized_symbols;
-    v = tensor(symbols.data(), OCUDU_DAPP_ELEMENT_CF32_V1, OCUDU_DAPP_ACCESS_WRITE_V1, {6, 1});
-    v.layout_id = OCUDU_DAPP_LAYOUT_PUSCH_EQUALIZED_DATA_RE_LAYER_V1;
+    auto& v                                   = metrics.equalized_symbols;
+    v                = tensor(symbols.data(), OCUDU_DAPP_ELEMENT_CF32_V1, OCUDU_DAPP_ACCESS_WRITE_V1, {6, 1});
+    v.layout_id      = OCUDU_DAPP_LAYOUT_PUSCH_EQUALIZED_DATA_RE_LAYER_V1;
     v.layout_version = 1;
     ocudu_dapp_receiver_output_v1 output{};
-    output.llrs = tensor(llrs.data(), OCUDU_DAPP_ELEMENT_I8_V1, OCUDU_DAPP_ACCESS_WRITE_V1, {12});
+    output.llrs    = tensor(llrs.data(), OCUDU_DAPP_ELEMENT_I8_V1, OCUDU_DAPP_ACCESS_WRITE_V1, {12});
     output.metrics = typed(OCUDU_DAPP_METADATA_RECEIVER_METRICS_V1, metrics);
     switch (probe) {
-      case 0: v.element_type = OCUDU_DAPP_ELEMENT_F32_V1; break;
-      case 1: v.layout_id = 0; break;
-      case 2: v.layout_version = 2; break;
-      case 3: v.dimensions[0] = 5; break;
-      case 4: v.dimensions[1] = 2; break;
-      case 5: v.byte_length = 1; break;
-      case 6: v.native_handle = output.llrs.native_handle; break;
-      case 7: v.native_handle = metrics.post_equalization_noise.native_handle; break;
-      case 8: v.native_handle = input.rx_grid.native_handle; break;
-      case 9: v.native_handle = reinterpret_cast<uintptr_t>(&metrics); break;
-      case 10: v.native_handle = std::numeric_limits<uintptr_t>::max() - 3; break;
-      case 11: v.access = OCUDU_DAPP_ACCESS_READ_V1; break;
-      case 12: v.domain = OCUDU_DAPP_MEM_ACCELERATOR_DEVICE_V1; break;
-      case 13: --output.metrics.metadata.size; break;
-      case 14: output.metrics.metadata.data = reinterpret_cast<const unsigned char*>(&metrics) + 1; break;
+      case 0:
+        v.element_type = OCUDU_DAPP_ELEMENT_F32_V1;
+        break;
+      case 1:
+        v.layout_id = 0;
+        break;
+      case 2:
+        v.layout_version = 2;
+        break;
+      case 3:
+        v.dimensions[0] = 5;
+        break;
+      case 4:
+        v.dimensions[1] = 2;
+        break;
+      case 5:
+        v.byte_length = 1;
+        break;
+      case 6:
+        v.native_handle = output.llrs.native_handle;
+        break;
+      case 7:
+        v.native_handle = metrics.post_equalization_noise.native_handle;
+        break;
+      case 8:
+        v.native_handle = input.rx_grid.native_handle;
+        break;
+      case 9:
+        v.native_handle = reinterpret_cast<uintptr_t>(&metrics);
+        break;
+      case 10:
+        v.native_handle = std::numeric_limits<uintptr_t>::max() - 3;
+        break;
+      case 11:
+        v.access = OCUDU_DAPP_ACCESS_READ_V1;
+        break;
+      case 12:
+        v.domain = OCUDU_DAPP_MEM_ACCELERATOR_DEVICE_V1;
+        break;
+      case 13:
+        --output.metrics.metadata.size;
+        break;
+      case 14:
+        output.metrics.metadata.data = reinterpret_cast<const unsigned char*>(&metrics) + 1;
+        break;
     }
     llrs.fill(31);
     ASSERT_EQ(receive(input, output), OCUDU_DAPP_INVALID_OUTPUT_V1);
-    for (auto value : llrs) EXPECT_EQ(value, 31);
+    for (auto value : llrs)
+      EXPECT_EQ(value, 31);
     EXPECT_EQ(output.reserved0, 0U);
   }
 }

@@ -39,7 +39,9 @@ const ocudu_dapp_receiver_metrics_v1* receiver_metrics(const ocudu_dapp_typed_me
   }
   const auto* metrics = static_cast<const ocudu_dapp_receiver_metrics_v1*>(wrapper.metadata.data);
   return metrics->struct_size >= minimum && metrics->struct_size <= wrapper.metadata.size &&
-                 metrics->abi_major == OCUDU_DAPP_ABI_MAJOR_V1 ? metrics : nullptr;
+                 metrics->abi_major == OCUDU_DAPP_ABI_MAJOR_V1
+             ? metrics
+             : nullptr;
 }
 
 template <uint32_t Bits>
@@ -136,20 +138,20 @@ void launch_receiver(const inputs& input, uint32_t modulation, const float2* cha
   const uint32_t blocks = (input.nof_data_re + receiver_threads - 1U) / receiver_threads;
   switch (modulation) {
     case OCUDU_DAPP_MODULATION_QPSK_V1:
-      receiver_kernel<2, Layers><<<blocks, receiver_threads, 0, input.stream>>>(input, channel, noise, phase_slopes,
-                                                                                levels, llrs, post_eq_noise, equalized_symbols);
+      receiver_kernel<2, Layers><<<blocks, receiver_threads, 0, input.stream>>>(
+          input, channel, noise, phase_slopes, levels, llrs, post_eq_noise, equalized_symbols);
       break;
     case OCUDU_DAPP_MODULATION_QAM16_V1:
-      receiver_kernel<4, Layers><<<blocks, receiver_threads, 0, input.stream>>>(input, channel, noise, phase_slopes,
-                                                                                levels, llrs, post_eq_noise, equalized_symbols);
+      receiver_kernel<4, Layers><<<blocks, receiver_threads, 0, input.stream>>>(
+          input, channel, noise, phase_slopes, levels, llrs, post_eq_noise, equalized_symbols);
       break;
     case OCUDU_DAPP_MODULATION_QAM64_V1:
-      receiver_kernel<6, Layers><<<blocks, receiver_threads, 0, input.stream>>>(input, channel, noise, phase_slopes,
-                                                                                levels, llrs, post_eq_noise, equalized_symbols);
+      receiver_kernel<6, Layers><<<blocks, receiver_threads, 0, input.stream>>>(
+          input, channel, noise, phase_slopes, levels, llrs, post_eq_noise, equalized_symbols);
       break;
     case OCUDU_DAPP_MODULATION_QAM256_V1:
-      receiver_kernel<8, Layers><<<blocks, receiver_threads, 0, input.stream>>>(input, channel, noise, phase_slopes,
-                                                                                levels, llrs, post_eq_noise, equalized_symbols);
+      receiver_kernel<8, Layers><<<blocks, receiver_threads, 0, input.stream>>>(
+          input, channel, noise, phase_slopes, levels, llrs, post_eq_noise, equalized_symbols);
       break;
   }
 }
@@ -229,10 +231,11 @@ ocudu_dapp_status_v1 receive(const ocudu_dapp_receiver_input_v1& input, ocudu_da
   const auto*           pusch             = cuda_contract::pusch_metadata(input.pusch);
   const auto*           metrics           = receiver_metrics(output.metrics);
   const bool            metrics_requested = output.metrics.metadata.data != nullptr;
-  const auto* symbol_output = metrics != nullptr &&
-                                     metrics->struct_size >= OCUDU_DAPP_RECEIVER_EQUALIZED_SYMBOLS_MIN_SIZE_V1 &&
-                                     metrics->equalized_symbols.struct_size != 0
-                                 ? &metrics->equalized_symbols : nullptr;
+  const auto*           symbol_output     = metrics != nullptr &&
+                                      metrics->struct_size >= OCUDU_DAPP_RECEIVER_EQUALIZED_SYMBOLS_MIN_SIZE_V1 &&
+                                      metrics->equalized_symbols.struct_size != 0
+                                                ? &metrics->equalized_symbols
+                                                : nullptr;
   if (state.constellation_levels == nullptr || worker.storage == nullptr ||
       !cuda_contract::validate_inputs(input, validated) || validated.nof_rx_ports > worker.nof_rx_ports ||
       validated.nof_layers > worker.nof_layers || pusch == nullptr ||
@@ -255,16 +258,15 @@ ocudu_dapp_status_v1 receive(const ocudu_dapp_receiver_input_v1& input, ocudu_da
     return OCUDU_DAPP_INVALID_OUTPUT_V1;
   }
   if (symbol_output != nullptr &&
-      (!cuda_contract::device_tensor(*symbol_output, OCUDU_DAPP_ELEMENT_CF32_V1, 2,
-                                     OCUDU_DAPP_ACCESS_WRITE_V1, sizeof(float2)) ||
+      (!cuda_contract::device_tensor(*symbol_output, OCUDU_DAPP_ELEMENT_CF32_V1, 2, OCUDU_DAPP_ACCESS_WRITE_V1,
+                                     sizeof(float2)) ||
        symbol_output->abi_major != OCUDU_DAPP_ABI_MAJOR_V1 ||
        symbol_output->layout_id != OCUDU_DAPP_LAYOUT_PUSCH_EQUALIZED_DATA_RE_LAYER_V1 ||
        symbol_output->layout_version != 1 || symbol_output->device_ordinal != output.llrs.device_ordinal ||
-       symbol_output->dimensions[0] != validated.nof_data_re ||
-       symbol_output->dimensions[1] != validated.nof_layers ||
-       !ocudu::dapp::reference::receiver_symbol_storage_is_disjoint(
-           *symbol_output, input, output, *pusch, *cuda_contract::dmrs_metadata(input.dmrs),
-           metrics->post_equalization_noise))) {
+       symbol_output->dimensions[0] != validated.nof_data_re || symbol_output->dimensions[1] != validated.nof_layers ||
+       !ocudu::dapp::reference::receiver_symbol_storage_is_disjoint(*symbol_output, input, output, *pusch,
+                                                                    *cuda_contract::dmrs_metadata(input.dmrs),
+                                                                    metrics->post_equalization_noise))) {
     return OCUDU_DAPP_INVALID_OUTPUT_V1;
   }
 

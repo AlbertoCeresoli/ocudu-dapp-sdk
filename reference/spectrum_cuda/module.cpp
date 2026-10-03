@@ -87,8 +87,8 @@ ocudu_dapp_status_v1 publish(void* context, const ocudu_dapp_spectrum_input_v1* 
   if (status != OCUDU_DAPP_OK_V1) {
     return status;
   }
-  constexpr uint32_t metric_id_samples           = 0x10001U; // vendor-private namespace
-  constexpr uint32_t metric_id_occupied_ppm      = 0x10002U;
+  constexpr uint32_t metric_id_samples      = 0x10001U; // vendor-private namespace
+  constexpr uint32_t metric_id_occupied_ppm = 0x10002U;
   spectrum_cuda_context::add_metric(context, metric_id_samples, result.samples);
   spectrum_cuda_context::add_metric(context, metric_id_occupied_ppm,
                                     result.nof_prbs == 0 ? 0 : result.occupied_prbs * 1'000'000ULL / result.nof_prbs);

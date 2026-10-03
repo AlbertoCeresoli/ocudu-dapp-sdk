@@ -3,5 +3,5 @@
 
 # Public-source-compatible HTTPS URL: no CI job token or private builder image.
 OCUDU_HOST_LOCK_REPOSITORY_URL="https://gitlab.com/ocudu/work_groups/wg2_ai_ran/ocudu-dapp-platform.git"
-OCUDU_HOST_LOCK_REF="bc0808d98b0e57ad16c20dec224542542c804faa"
+OCUDU_HOST_LOCK_REF="bc9478a806bc617a7ed1ae2efd64d5b9905e8eae"
 OCUDU_HOST_LOCK_DAPP_ABI="1.0"

@@ -84,7 +84,9 @@ def validate_generation(project: Path, kind: str, folder: str, function: str) ->
 
     for path in project.rglob("*"):
         if path.is_file() and path.name != "LICENSE":
+            # REUSE-IgnoreStart
             assert "SPDX-License-Identifier: BSD-3-Clause-Clear" in path.read_text()
+            # REUSE-IgnoreEnd
 
 
 def validate_failed_publication_cleanup(generator: Path, output_root: Path) -> None:

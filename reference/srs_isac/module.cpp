@@ -51,17 +51,17 @@ ocudu_dapp_status_v1 publish(void* context, const ocudu_dapp_srs_isac_input_v1* 
     return OCUDU_DAPP_INVALID_INPUT_V1;
   }
   // Vendor-private numeric metric ids (unregistered uint32 namespace).
-constexpr uint32_t metric_id_samples        = 0x20001U;
-constexpr uint32_t metric_id_peak_delay_bin = 0x20002U;
+  constexpr uint32_t metric_id_samples        = 0x20001U;
+  constexpr uint32_t metric_id_peak_delay_bin = 0x20002U;
 
-const auto status = begin_invocation(context);
+  const auto status = begin_invocation(context);
   if (status != OCUDU_DAPP_OK_V1) {
     return status;
   }
   srs_cir_analysis result{};
   const auto       analyzed = guard_algorithm_call([&] {
     return estimate_srs_cir_placeholder(view, source_metadata->noise_variance, result) ? OCUDU_DAPP_OK_V1
-                                                                                       : OCUDU_DAPP_INVALID_INPUT_V1;
+                                                                                             : OCUDU_DAPP_INVALID_INPUT_V1;
   });
   if (analyzed != OCUDU_DAPP_OK_V1) {
     return analyzed;

@@ -24,3 +24,10 @@ path = ["tests/data/*.bin"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "Copyright (C) 2026 DeepSig Inc."
 SPDX-License-Identifier = "BSD-3-Clause-Clear"
+
+# JSON cannot carry a comment header.
+[[annotations]]
+path = ["tools/lab_profile.example.json"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "Copyright (C) 2026 DeepSig Inc."
+SPDX-License-Identifier = "BSD-3-Clause-Clear"
