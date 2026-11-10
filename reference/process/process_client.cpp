@@ -563,7 +563,7 @@ bool valid_management_request(const ocudu_dapp_process_management_request_v1& re
   const bool model = request.operation == OCUDU_DAPP_PROCESS_MANAGEMENT_MODEL_V1;
   if (request.struct_size != sizeof(request) || request.route_generation == 0 || request.request_id == 0 ||
       request.operation < OCUDU_DAPP_PROCESS_MANAGEMENT_DESCRIBE_CONFIG_V1 ||
-      request.operation > OCUDU_DAPP_PROCESS_MANAGEMENT_MODEL_V1 ||
+      request.operation > OCUDU_DAPP_PROCESS_MANAGEMENT_READ_METRICS_V1 || // [srs-sharing] metrics operations
       request.entry_count > OCUDU_DAPP_PROCESS_MANAGEMENT_MAX_ENTRIES_V1 ||
       (request.flags & ~OCUDU_DAPP_PROCESS_MANAGEMENT_DRY_RUN_V1) != 0 ||
       descriptors != (model && request.artifact_size != 0 ? 1U : 0U) || request.artifact_size > 1024 * 1024 ||
@@ -744,6 +744,64 @@ bool execute_management(process_management_binding binding, const ocudu_dapp_pro
         model.expected_generation = request.expected_generation;
         model.dry_run             = (request.flags & OCUDU_DAPP_PROCESS_MANAGEMENT_DRY_RUN_V1) != 0;
         response.status           = binding.api->manage_model(binding.instance, &model, &response.resulting_generation);
+        break;
+      }
+      // [srs-sharing] The worker's own metrics, paged for the host (control.h): count = items in this response,
+      // resulting_generation = total, MORE when items follow.
+      case OCUDU_DAPP_PROCESS_MANAGEMENT_DESCRIBE_METRICS_V1:
+      case OCUDU_DAPP_PROCESS_MANAGEMENT_READ_METRICS_V1: {
+        const bool describe = request.operation == OCUDU_DAPP_PROCESS_MANAGEMENT_DESCRIBE_METRICS_V1;
+        if ((binding.api->capability_bits & OCUDU_DAPP_MANAGEMENT_METRICS_V1) == 0 ||
+            (describe ? binding.api->describe_metrics == nullptr : binding.api->read_metrics == nullptr) ||
+            request.entry_count != 0 || request.expected_generation != 0 || request.boundary_or_action != 0 ||
+            artifact_fd >= 0)
+          break;
+        uint32_t total  = 0;
+        auto     status = describe ? binding.api->describe_metrics(binding.instance, nullptr, 0, &total)
+                                   : binding.api->read_metrics(binding.instance, nullptr, 0, &total);
+        if (status != OCUDU_DAPP_OK_V1 || total > OCUDU_DAPP_PROCESS_MANAGEMENT_MAX_METRICS_V1) {
+          response.status = status == OCUDU_DAPP_OK_V1 ? OCUDU_DAPP_RESOURCE_V1 : status;
+          break;
+        }
+        const uint32_t first = request.item_offset;
+        const uint32_t page  = first < total ? std::min<uint32_t>(total - first, describe ? 1U
+                                                                  : OCUDU_DAPP_PROCESS_MANAGEMENT_MAX_ENTRIES_V1)
+                                             : 0U;
+        response.resulting_generation = total;
+        response.count                = page;
+        response.flags                = first + page < total ? OCUDU_DAPP_PROCESS_MANAGEMENT_MORE_V1 : 0;
+        response.status               = OCUDU_DAPP_OK_V1;
+        if (page == 0)
+          break;
+        if (describe) {
+          std::vector<ocudu_dapp_metric_descriptor_v1> values(total);
+          status = binding.api->describe_metrics(binding.instance, values.data(), total, &count);
+          const auto& source = values[first];
+          auto&       output = response.payload.metric_descriptor;
+          if (status != OCUDU_DAPP_OK_V1 || count != total || source.name == nullptr ||
+              !copy_fixed(output.name, source.name) ||
+              !copy_fixed(output.description, source.description != nullptr ? source.description : "") ||
+              !copy_fixed(output.unit, source.unit != nullptr ? source.unit : "")) {
+            response.status = OCUDU_DAPP_INVALID_OUTPUT_V1, response.count = 0, response.flags = 0,
+            response.resulting_generation = 0;
+            break;
+          }
+          output.value_kind = source.value_kind;
+          output.flags      = source.flags;
+        } else {
+          std::vector<ocudu_dapp_metric_sample_v1> values(total);
+          status = binding.api->read_metrics(binding.instance, values.data(), total, &count);
+          for (uint32_t index = 0; status == OCUDU_DAPP_OK_V1 && count == total && index != page; ++index) {
+            const auto& source = values[first + index];
+            auto&       output = response.payload.entries[index];
+            if (source.name == nullptr || !copy_fixed(output.key, source.name) ||
+                !encode_value(output.value, source.value))
+              status = OCUDU_DAPP_INVALID_OUTPUT_V1;
+          }
+          if (status != OCUDU_DAPP_OK_V1 || count != total)
+            response.status = OCUDU_DAPP_INVALID_OUTPUT_V1, response.count = 0, response.flags = 0,
+            response.resulting_generation = 0;
+        }
         break;
       }
       default:
